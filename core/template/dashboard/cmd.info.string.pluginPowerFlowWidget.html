@@ -1,0 +1,300 @@
+<div class="cmd cmd-widget #history#" data-type="info" data-subtype="string" data-template="status" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#">
+  <div class="container#uid#">
+    <div class="monitor-list#uid#">
+      <div class="item#uid#">
+        <div class="row#uid#">
+          <div class="c-ol-9#uid# small-padding">
+            <div class="info#uid#">
+              <span class="badge#uid# bg-primary#uid# pourcentage" title="24-hour"></span>
+              <p class="item-name#uid# service"></p>
+              <!--<span title="Setting"></span>-->
+            </div>
+            <div class="extra-info#uid#"></div>
+          </div>
+          <div class="c-ol-3#uid#">
+            <div class="wrap#uid#" style="padding: 5px 0px;/* width: 100%;*/">
+              <div class="hp-bar-big#uid#" id="bar#uid#" style="transform: translateX(0px);transition: 0.25s ease-in-out;"></div>
+              <div class="d-flex#uid# justify-content-between#uid# align-items-center#uid# word#uid#" style="margin-left: 0px;">
+                <div class="ago#uid#">ago</div><div>now</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <template>
+    <div>time : duration|date ({{Affiche durée ou date de la valeur}})</div>
+  </template>
+  <script>
+    function log#id#(text) {
+      if (debug#id#) console.log(text);
+    }
+    var debug#id# = ('#debug#' == 1) ? true : true;
+    jeedom.cmd.addUpdateFunction('#id#', function(_options) {
+      if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+        
+        log#id#('┌─────────────────── Widget Jeedom Service Status [#id#] en debug [addUpdateFunction()] ───────────────')
+        log#id#('| value : ' + _options.display_value.replace(/&quot;/g,'"'))
+        let IS_JSON = true;
+        let div = ''
+        let classDiv = ''
+        try { var obj = JSON.parse(_options.display_value.replace(/&quot;/g,'"')) } catch(err) { IS_JSON = false }
+        if (_options.display_value != "" && IS_JSON && isNaN(_options.display_value)) // && autorizeTempo
+        {
+          log#id#('|┌─────────────────── json detecté ───────────────────')
+          log#id#('|| Nombre de clés dans le json : ' + Object.keys(obj).length)
+          for(key in obj) {
+            if(isset(obj[key]['uptimeList'])) {
+              log#id#('|| Pourcentage : ' + obj[key]['uptimeList'])
+              cmd.querySelector(".pourcentage").innerHTML = obj[key]['uptimeList'] + '%'
+              continue
+            }
+            if (isset(_options.init)) {
+              if(isset(obj[key]['service'])) {
+                log#id#('|| Service : ' + obj[key]['service'])
+                cmd.querySelector(".service").innerHTML = obj[key]['service']
+                continue
+              }
+              if (isset(obj[key]['heartbeatList'])) {
+                log#id#('|| Nombre de heartbeatList dans le json : ' + obj[key]['heartbeatList'].length)
+                for(status in obj[key]['heartbeatList']) {
+                  classDiv = ''
+                  var newDiv = document.createElement("div");
+                  //newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : ' + obj[key]['heartbeatList'][status]['ping']);
+                  newDiv.setAttribute("data-date", obj[key]['heartbeatList'][status]['time']);
+                  newDiv.setAttribute("style", 'width: 5px; height: 16px; margin: 2px; --hover-scale: 1.5;');
+                  newDiv.addClass('beat#uid#')
+                  if (obj[key]['heartbeatList'][status]['status'] == 0) {
+                    newDiv.addClass('down#uid#')
+                    newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : down');
+                  }
+                  else if (obj[key]['heartbeatList'][status]['status'] == 2) {
+                    newDiv.addClass('pending#uid#')
+                    newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : pending');
+                  } else {
+                    newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : ' + obj[key]['heartbeatList'][status]['ping']);
+                  }
+                  document.getElementById("bar#uid#").appendChild(newDiv)
+                }
+              }
+            } else {
+              if (isset(obj[key]['heartbeatList'])) {
+                cmd.querySelectorAll('.beat#uid#').forEach(_beat => {
+                  for(status in obj[key]['heartbeatList']) {
+                    if (_beat.getAttribute('data-date') == obj[key]['heartbeatList'][status]['time']) search = true
+                  }
+                })
+                let nbAppend = 0
+                for(status in obj[key]['heartbeatList']) {
+                  if (cmd.querySelector('.beat#uid#[data-date="' + obj[key]['heartbeatList'][status]['time'] + '"]') === null) {
+                    log#id#('|| Create heartbeatList > ' + obj[key]['heartbeatList'][status]['time'] + ' [' + obj[key]['heartbeatList'][status]['status'] + ']')
+                    classDiv = ''
+                    var newDiv = document.createElement("div");
+                    newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : ' + obj[key]['heartbeatList'][status]['ping']);
+                    newDiv.setAttribute("data-date", obj[key]['heartbeatList'][status]['time']);
+                    newDiv.setAttribute("style", 'width: 5px; height: 16px; margin: 2px; --hover-scale: 1.5;');
+                    newDiv.addClass('beat#uid#')
+                    if (obj[key]['heartbeatList'][status]['status'] == 0) {
+                      newDiv.addClass('down#uid#')
+                      newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : down');
+                    }
+                    else if (obj[key]['heartbeatList'][status]['status'] == 2) {
+                      newDiv.addClass('pending#uid#')
+                      newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : pending');
+                    } else {
+                      newDiv.setAttribute("title", obj[key]['heartbeatList'][status]['time'] + '<br>Ping : ' + obj[key]['heartbeatList'][status]['ping']);
+                    }
+                    document.getElementById("bar#uid#").appendChild(newDiv)
+                    nbAppend++
+                    setTimeout(() => {
+                      document.getElementById("bar#uid#")?.firstElementChild?.remove()
+                    }, 600)
+                  }
+                }
+                if (nbAppend > 0) {
+                  jeedomUtils.initTooltips(cmd)
+                  cmd.querySelector('.hp-bar-big#uid#').setAttribute('style', 'transition: ' + (0.25 * nbAppend) + 's ease-in-out; transform: translateX(-' + (nbAppend * 9) + 'px);')
+                  setTimeout(() => {
+                    if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+                      cmd.querySelector('.hp-bar-big#uid#').setAttribute('style', 'transform: translateX(-0px);')
+                    }
+                  }, 600)
+                }
+              }
+            }
+            
+          } //for
+          setTimeout(() => {
+            if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+              // update diff
+              let date1 = new Date(cmd.querySelector('.hp-bar-big#uid# .beat#uid#:last-child').getAttribute('data-date'))
+              let date2 = new Date(cmd.querySelector('.hp-bar-big#uid# .beat#uid#:first-child').getAttribute('data-date'))
+              let diff = Math.round((date1 - date2) / 1000 / 60)
+              cmd.querySelector(".ago#uid#").innerHTML = diff + 'm ago'
+            }
+          }, 800)
+        }
+        log#id#('|└──────────────────────')
+        log#id#('└──────────────────────')
+        /*
+        cmd.querySelector('.content-xs').setAttribute('title', '{{Date de valeur}}: ' + _options.valueDate + '<br>{{Date de collecte}}: ' + _options.collectDate)
+        if ('#time#' == 'duration' || '#time#' == 'date') {
+          jeedom.cmd.displayDuration(_options.valueDate, cmd.querySelector('.timeCmd'), '#time#')
+        }
+
+        cmd.querySelector('.value').innerHTML = _options.display_value
+        cmd.querySelector('.unit').innerHTML = _options.unit
+
+        if (_options.alertLevel == 'warning') {
+          cmd.querySelector('.value').innerHTML = '<span class="label label-warning"><i class="fas fa-bell"></i> ' + _options.value + '</span>'
+        } else if (_options.alertLevel == 'danger') {
+          cmd.querySelector('.value').innerHTML = '<span class="label label-danger"><i class="fas fa-exclamation"></i> ' + _options.value + '</span>'
+        }
+        */
+      }
+    })
+
+    jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#', init: true }])
+  </script>
+  <style>
+    .monitor-list#uid# .item#uid# {
+    display: block;
+    text-decoration: none;
+    padding: 5px 10px 5px;
+    border-radius: 10px;
+    transition: all ease-in-out .15s;
+text-align: left;
+}
+    .row#uid# {
+    --bs-gutter-x: 1.5rem;
+    --bs-gutter-y: 0;
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: calc(-1* var(--bs-gutter-y));
+    margin-right: calc(-.5* var(--bs-gutter-x));
+    margin-left: calc(-.5* var(--bs-gutter-x));
+}
+
+    .row#uid#>* {
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    /* padding-right: calc(var(--bs-gutter-x)* .5) !important; */
+    /* padding-left: calc(var(--bs-gutter-x)* .5) !important; */
+    /* margin-top: var(--bs-gutter-y); */
+}
+        .c-ol-9#uid# {
+    flex: 0 0 auto;
+    width: 150px;
+}
+    .c-ol-3#uid# {
+        flex: 0 0 auto;
+        width: 270px;
+    }
+    .container#uid# {
+    /* width: 600px; */
+    padding-right: var(--bs-gutter-x, .75rem);
+    padding-left: var(--bs-gutter-x, .75rem);
+    margin-right: auto;
+    margin-left: auto;
+}
+    .monitor-list#uid# .item#uid# .info#uid# {
+    white-space: nowrap;
+    overflow: hidden;
+      padding-top: 6px;
+}
+    .monitor-list#uid# .item#uid#:hover {
+    background-color: #e7faec;
+}
+ [data-theme="core2019_Dark"] .monitor-list#uid# .item#uid#:hover {
+background-color: #070a10;
+    }
+    
+    .monitor-list#uid# {
+    min-height: 46px;
+}
+    .badge#uid# {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 50rem;
+      min-width: 55px;
+}
+    .bg-primary#uid# {
+    --bs-bg-opacity: 1;
+    /* background-color: rgba(var(--bs-primary-rgb), var(--bs-bg-opacity)) !important; */
+      background-color: var(--logo-primary-color);
+}
+    .item-name#uid# {
+    padding-left: 5px;
+    padding-right: 5px;
+    margin: 0;
+    display: inline-block;
+}
+    .extra-info#uid# {
+    display: flex;
+    margin-bottom: .5rem;
+}
+    .wrap#uid# {
+    overflow: hidden;
+    width: 100%;
+    white-space: nowrap;
+}
+.hp-bar-big#uid# .beat#uid# {
+    display: inline-block;
+    /* background-color: #5cdd8b; */
+  background-color: var(--logo-primary-color);
+    border-radius: 50rem;
+}
+.hp-bar-big#uid# .beat#uid#.empty#uid# {
+    /* background-color: #f0f8ff */
+  background-color: var(--link-color);
+}
+.hp-bar-big#uid# .beat#uid#.down#uid# {
+    /* background-color: #dc3545 */
+  background-color: var(--al-danger-color);
+}
+.hp-bar-big#uid# .beat#uid#.pending#uid# {
+    /* background-color: #f8a306 */
+  background-color: var(--al-warning-color);
+}
+.hp-bar-big#uid# .beat#uid#.maintenance#uid# {
+    /* background-color: #1747f5 */
+  background-color: var(--al-info-color);
+}
+.hp-bar-big#uid# .beat#uid#:not(.empty#uid#):hover {
+    transition: all ease-in-out .15s;
+    opacity: .8;
+    transform: scale(var(--hover-scale))
+}
+    .word#uid# {
+    color: #aaa;
+    font-size: 12px;
+}
+    .align-items-center#uid# {
+    align-items: center !important;
+}
+    .justify-content-between#uid# {
+    justify-content: space-between !important;
+}
+    .d-flex#uid# {
+    display: flex !important;
+}
+    .shadow-box#uid# {
+    box-shadow: 0 15px 70px rgba(0, 0, 0, .1);
+    padding: 10px;
+    border-radius: 10px;
+}
+    :root {
+      --bs-primary-rgb: 92, 221, 139;
+      --hover-scale: 1.5
+    }
+  </style>
+</div>

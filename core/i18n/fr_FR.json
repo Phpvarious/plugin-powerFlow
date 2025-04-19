@@ -1,0 +1,70 @@
+{
+    "plugins\/powerFlow\/plugin_info\/configuration.php": {
+        
+    },
+    "plugins\/powerFlow\/desktop\/modal\/update.powerFlow.php": {
+        
+    },
+    "plugins\/powerFlow\/desktop\/modal\/plugin.powerFlow.php": {
+        "401 - Accès non autorisé": "401 - Accès non autorisé",
+        "Activer": "Activer",
+        "Sauvegarder": "Sauvegarder",
+        "Nom de la Commande": "Nom de la Commande",
+        "Aucun": "Aucun",
+        "Plugins compatibles": "Plugins compatibles",
+        "Modifications sauvegardées avec succès": "Modifications sauvegardées avec succès",
+        "Sauvegarde effectuée": "Sauvegarde effectuée"
+    },
+    "plugins\/powerFlow\/desktop\/php\/powerFlow.php": {
+        "401 - Accès non autorisé": "401 - Accès non autorisé",
+        "Configuration": "Configuration",
+        "Rechercher": "Rechercher",
+        "Équipement visible": "Équipement visible",
+        "Équipement non visible": "Équipement non visible",
+        "Ajouter": "Ajouter",
+        "Plugins": "Plugins",
+        "Configuration avancée": "Configuration avancée",
+        "Sauvegarder": "Sauvegarder",
+        "Supprimer": "Supprimer",
+        "Nom de l'équipement": "Nom de l'équipement",
+        "Objet parent": "Objet parent",
+        "Aucun": "Aucun",
+        "Catégorie": "Catégorie",
+        "Options": "Options",
+        "Activer": "Activer",
+        "Visible": "Visible",
+        "Sauvegarde": "Sauvegarde",
+        "Nom": "Nom",
+        "Type": "Type",
+        "Valeur": "Valeur",
+        "Actions": "Actions"
+    },
+    "plugins\/powerFlow\/desktop\/js\/powerFlow.js": {
+        "Menus enregistrés": "Menus enregistrés",
+        "Nom de la commande": "Nom de la commande",
+        "Choisir une icône": "Choisir une icône",
+        "Afficher": "Afficher",
+        "Historiser": "Historiser",
+        "Min": "Min",
+        "Max": "Max",
+        "Unité": "Unité",
+        "Configuration avancée": "Configuration avancée",
+        "Tester": "Tester",
+        "Supprimer la commande": "Supprimer la commande"
+    },
+    "plugins\/powerFlow\/core\/ajax\/powerFlow.ajax.php": {
+        "401 - Accès non autorisé": "401 - Accès non autorisé",
+        "Equipement non trouvé : ": "Equipement non trouvé : ",
+        "Aucune methode correspondante à : ": "Aucune methode correspondante à : "
+    },
+    "plugins\/powerFlow\/core\/class\/powerFlow.class.php": {
+        
+    },
+    "plugins\/powerFlow\/core\/api\/powerFlow.api.php": {
+        "JSONRPC object not defined": "JSONRPC object not defined",
+        "Aucune demande": "Aucune demande",
+    },
+    "info.json": {
+        "info json"
+    }
+}
