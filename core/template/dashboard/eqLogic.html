@@ -179,11 +179,11 @@
       log#uid#('| getBatteryIcon() -> ' + value + ' | ' + full_capacity + ' | ' + empty_capacity + ' | ' + icon_perso)
       let available = full_capacity - empty_capacity
       let value_pourcent = Math.trunc(value * available / 100)
-      if (value_pourcent <= 0) return '<use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-battery-0"/>';
-      else if (value_pourcent < 50) return '<use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-battery-25"/>';
-      else if (value_pourcent < 75) return '<use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-battery-50"/>';
-      else if (value_pourcent < 100) return '<use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-battery-75"/>';
-      else return '<use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-battery-100"/>';
+      if (value_pourcent <= 0) return '<use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-battery-0"/>';
+      else if (value_pourcent < 50) return '<use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-battery-25"/>';
+      else if (value_pourcent < 75) return '<use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-battery-50"/>';
+      else if (value_pourcent < 100) return '<use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-battery-75"/>';
+      else return '<use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-battery-100"/>';
     }
     
     function numIsPair(n) {
@@ -1876,7 +1876,7 @@
             html += '<circle id="es-dot#uid#" cx="0" cy="0" r="3" fill="transparent"><animateMotion id="anim_load#uid#" dur="' + config#uid#.load.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#es-line1#uid#"/></animateMotion></circle>'
             // ICON LOAD NONESS
             if (config#uid#.load.additional_loads >= 1 || config#uid#.load.has_load_power) {
-              html += '<svg fill="var(--load_colour#uid#)" id="icon_load#uid#" x="400" y="185" width="80" height="80" style="color:var(--load_colour#uid#)"><use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-load"></use></svg>'
+              html += '<svg fill="var(--load_colour#uid#)" id="icon_load#uid#" x="400" y="185" width="80" height="80" style="color:var(--load_colour#uid#)"><use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-load"></use></svg>'
             }
             ///////////////
             ///  DAILY  ///
@@ -2071,7 +2071,7 @@
                     html += '<svg xmlns="http://www.w3.org/2000/svg" x="' + (x_icon + i * 35) + '" y="' + y_icon + '" width="25" height="25" viewBox="0 0 25 25" opacity="1"><image xlink:href="' + icon[i].trim() + '" x="0" y="0" height="25" width="25"/></svg>'
                   } else {
                     html += '<svg fill="var(--load_colour#uid#)" x="' + (x_icon + i * 35) + '" y="' + y_icon + '" width="25" height="25" style="color:var(--load_colour#uid#)">'
-                    html += '<use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-' + icon[i].trim() + '"/>'
+                    html += '<use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-' + icon[i].trim() + '"/>'
                     html += '</svg>'
                   }
                   if (i == 1) break
@@ -2308,7 +2308,7 @@
             ///////////////
             ///  ICON   ///
             ///////////////
-            html += '<svg fill="var(--aux_colour#uid#)" id="aux_generator#uid#" x="' + ((config#uid#.battery.power.show) ? '299' : '199') + '" y="325" width="80" height="80" style="color:var(--aux_colour#uid#)"><use xlink:href="data/customTemplates/dashboard/cmd.info.string.distribution_onduleur/icon.svg#icon-aux"></use></svg>'
+            html += '<svg fill="var(--aux_colour#uid#)" id="aux_generator#uid#" x="' + ((config#uid#.battery.power.show) ? '299' : '199') + '" y="325" width="80" height="80" style="color:var(--aux_colour#uid#)"><use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-aux"></use></svg>'
             ///////////////
             ///  DAILY  ///
             ///////////////
