@@ -197,7 +197,7 @@ include_file('3rdparty', 'tree/tree', 'js');
             svgElem.setAttribute('fill', 'var(--txt-color)')
             svgElem.setAttribute('style', 'color:var(--txt-color)')
             svgElem.setAttribute('data-icon', Object.keys(iconList[i])[0]);
-            useElem.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'plugins/powerFlow/core/template/dashboard/icon.svg#icon-' + Object.keys(iconList[i])[0]);
+            useElem.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', 'plugins/powerFlow/desktop/images/icon.svg#icon-' + Object.keys(iconList[i])[0]);
             useElem.setAttribute('data-icon', Object.keys(iconList[i])[0]);
             svgElem.appendChild(useElem);
             const tagSpan1 = document.createElement('span');
