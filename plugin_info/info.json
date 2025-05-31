@@ -1,0 +1,33 @@
+{
+    "id": "powerFlow",
+    "name": "Widget Onduleur",
+    "description": {
+        "fr_FR": "Permet d'afficher un widget qui indique le flux des éléments"
+    },
+    "licence": "AGPL",
+    "author": "Phpvarious",
+    "require": "4.4.0",
+    "installation": "Aucune",
+    "hasDependency": false,
+    "hasOwnDeamon": false,
+    "maxDependancyInstallTime": 0,
+    "category": "energy",
+    "changelog": "https:\/\/phpvarious.github.io\/documentation\/#language#\/plugins\/energy\/powerFlow\/changelog",
+    "documentation": "https:\/\/phpvarious.github.io\/documentation\/#language#\/plugins\/energy\/powerFlow\/",
+    "language": [
+        "fr_FR"
+    ],
+    "compatibility": [
+        "miniplus",
+        "smart",
+        "rpi",
+        "docker",
+        "diy",
+        "mobile",
+        "v4",
+        "atlas",
+        "luna"
+    ],
+    "changelog_beta": "https:\/\/phpvarious.github.io\/documentation\/#language#\/plugins\/energy\/powerFlow\/beta\/changelog",
+    "documentation_beta": "https:\/\/phpvarious.github.io\/documentation\/#language#\/plugins\/energy\/powerFlow\/beta"
+}
