@@ -76,53 +76,23 @@ function addCmdToTable(_cmd) {
     }
   })
 }
-////  GRID  \\\\
-/*
-document.querySelectorAll('#configureGrid .listCmdInfo').forEach(listCmdInfo => {
-  listCmdInfo.addEventListener('click', function(event) {
-    var type = this.getAttribute('data-type')
-    var subtype = this.getAttribute('data-subtype')
-    if (el = document.querySelector('#configureGrid .eqLogicAttr[data-l2key="' + type + '"]')) {
-      jeedom.cmd.getSelectModal({
-        cmd: {
-          type: 'info',
-          subType: subtype
-        }
-      }, function(result) {
-        el.jeeValue(result.human)
-        jeeFrontEnd.modifyWithoutSave = true
-      })
-    }
-  })
-})
-*/
-////  BATTERY  \\\\
-/*
-document.querySelectorAll('#configureBattery .listCmdInfo').forEach(listCmdInfo => {
-  listCmdInfo.addEventListener('click', function(event) {
-    var type = this.getAttribute('data-type')
-    var subtype = this.getAttribute('data-subtype')
-    if (el = document.querySelector('#configureBattery .eqLogicAttr[data-l2key="' + type + '"]')) {
-      jeedom.cmd.getSelectModal({
-        cmd: {
-          type: 'info',
-          subType: subtype
-        }
-      }, function(result) {
-        el.jeeValue(result.human)
-        jeeFrontEnd.modifyWithoutSave = true
-      })
-    }
-  })
-})
-*/
 ////  SOLAR  \\\\
 document.querySelector('.addPv').addEventListener('click', function(event) {
+  event.stopPropagation()
+  event.preventDefault()
   addPv({})
 })
 ////  LOAD  \\\\
 document.querySelector('.addLoad').addEventListener('click', function(event) {
+  event.stopPropagation()
+  event.preventDefault()
   addLoad({})
+})
+////  PERSO  \\\\
+document.querySelector('.addPerso').addEventListener('click', function(event) {
+  event.stopPropagation()
+  event.preventDefault()
+  addPerso()
 })
 
 document.querySelector('#div_pv').addEventListener('click', function(event) {
@@ -132,7 +102,6 @@ document.querySelector('#div_pv').addEventListener('click', function(event) {
     _target.closest('.pv').remove()
     return;
   } else if (_target = event.target.closest('.listCmdInfo[data-type][data-subtype]')) {
-    console.log('listCmdInfo pv')
     event.stopPropagation()
     event.preventDefault()
     var type = _target.getAttribute('data-type')
@@ -156,7 +125,6 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
     _target.closest('.load').remove()
     return;
   } else if (_target = event.target.closest('.listCmdInfo[data-type][data-subtype]')) {
-    console.log('listCmdInfo load')
     event.stopPropagation()
     event.preventDefault()
     var type = _target.getAttribute('data-type')
@@ -172,7 +140,6 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
     })
     return;
   } else if (_target = event.target.closest('.bt_library')) {
-    console.log('bt_library load')
     event.stopPropagation()
     event.preventDefault()
     var type = _target.getAttribute('data-type')
@@ -190,7 +157,6 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
       }, params)
     }
   } else if (_target = event.target.closest('.restoreDefaut[data-type][data-defaut]')) {
-    console.log('restoreDefaut load')
     event.stopPropagation()
     event.preventDefault()
     var type = _target.getAttribute('data-type')
@@ -200,11 +166,42 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
     }
   }
 })
+document.querySelector('#div_perso').addEventListener('click', function(event) {
+  var _target = null
+  var _type = null
+  if (_target = event.target.closest('.bt_removeInfo')) {
+    _target.closest('.perso').remove()
+    return;
+  } else if (_target = event.target.closest('.listCmdInfo[data-type][data-subtype]')) {
+    event.stopPropagation()
+    event.preventDefault()
+    var type = _target.getAttribute('data-type')
+    var el = _target.closest('.perso').querySelector('.persoAttr[data-l1key="' + type + '"]')
+    if (el) {
+      let params = {}
+      params.type = 'info'
+      if (_target.getAttribute('data-subtype') != '') params.subType = _target.getAttribute('data-subtype')
+      jeedom.cmd.getSelectModal({
+        cmd: params
+      }, function(result) {
+        el.jeeValue(result.human)
+        jeeFrontEnd.modifyWithoutSave = true
+      })
+    }
+      return;
+  } else if (_target = event.target.closest('.restoreDefaut[data-type][data-defaut]')) {
+    event.stopPropagation()
+    event.preventDefault()
+    var type = _target.getAttribute('data-type')
+    var el = _target.closest('.perso').querySelector('input[data-l1key="' + type + '"]')
+    if (el) {
+      el.value = _target.getAttribute('data-defaut')
+    }
+  }
+})
 document.querySelector('.tab-content').addEventListener('click', function(event) {
-  console.log('click')
   var _target = null
   if (_target = event.target.closest('.restoreDefaut[data-type][data-defaut]')) {
-    console.log('restoreDefaut 2')
     var el = document.querySelector('input[data-l2key="' + _target.getAttribute('data-type') + '"]')
     if (!el) el = document.querySelector('input[data-l1key="' + _target.getAttribute('data-type') + '"]')
     if (el) {
@@ -212,7 +209,6 @@ document.querySelector('.tab-content').addEventListener('click', function(event)
     }
   }
   else if (_target = event.target.closest('.listCmdInfo[data-type][data-subtype]')) {
-    console.log('listCmdInfo 2')
     var type = _target.getAttribute('data-type')
     var el = document.querySelector('input[data-l2key="' + type + '"]')
     if (el) {
@@ -221,10 +217,6 @@ document.querySelector('.tab-content').addEventListener('click', function(event)
       if (_target.getAttribute('data-subtype') != '') params.subType = _target.getAttribute('data-subtype')
       jeedom.cmd.getSelectModal({
         cmd: params
-        //cmd: {
-          //type: 'info',
-          //subType: _target.getAttribute('data-subtype')
-        //}
       }, function(result) {
         el.jeeValue(result.human)
         jeeFrontEnd.modifyWithoutSave = true
@@ -232,18 +224,21 @@ document.querySelector('.tab-content').addEventListener('click', function(event)
       return;
     } 
   } else if (_target = event.target.closest('.bt_library')) {
-    console.log('bt_library 2')
     var el = document.querySelector('input[data-l2key="' + _target.getAttribute('data-type') + '"]')
+    var options = _target.getAttribute('data-options')
     if (el) {
-      console.log(el)
       let icon = el.value
-      console.log(icon)
       let params = {}
+      params.showIcon = true
       params.icon = false
-      params.img = true
       if (icon.value != '') {
-        params.icon = icon.value
+        params.icon = icon
       }
+      if (options && options == 'noIcon') {
+        params.icon = false
+        params.showIcon = false
+      }
+      params.img = true
       powerFlowChooseIcon(function(_icon) {
         el.value = _icon
       }, params)
@@ -254,12 +249,16 @@ document.querySelector('.tab-content').addEventListener('click', function(event)
 powerFlowChooseIcon = function(_callback, _params) {
   var url = 'index.php?v=d&plugin=powerFlow&modal=icon.selector'
   if (_params && _params.img && _params.img === true) {
-    url += '&showimg=1'
+    url += '&showImg=1'
   }
   if (_params && _params.icon) {
     var icon = _params.icon
     url += '&selectIcon=' + icon
   }
+  if (_params && _params.showIcon) {
+    url += '&showIcon=1'
+  } else url += '&showIcon=0'
+  
   if (_params && _params.path) {
     url += '&path=' + encodeURIComponent(_params.path)
   }
@@ -278,7 +277,6 @@ powerFlowChooseIcon = function(_callback, _params) {
               jeeDialog.get('#mod_selectIcon').close()
               return
             }
-            
             var icon = document.getElementById('mod_selectIcon').querySelector('.iconSelected .iconSel').innerHTML
             if (icon == undefined) {
               icon = ''
@@ -288,7 +286,6 @@ powerFlowChooseIcon = function(_callback, _params) {
             }
             if(icon.indexOf('<img') === 0){
               icon = document.getElementById('mod_selectIcon').querySelector('.iconSelected .iconSel img').getAttribute('data-realfilepath')
-              
             }
             icon = icon.replace(/"/g, "'")
             _callback(icon)
@@ -307,27 +304,50 @@ powerFlowChooseIcon = function(_callback, _params) {
       }
     },
     onClose: function() {
-      jeeDialog.get('#mod_selectIcon').destroy() //No twice footer select/search
+      jeeDialog.get('#mod_selectIcon').destroy()
     },
     contentUrl: url
   })
 }
-
+powerFlowInitSpinners = function(_el) {
+  if (typeof jQuery === 'function') {
+    //console.log('jQuery === function')
+  }
+  _el.querySelectorAll('input[type="number"].ispin').forEach(_spin => {
+    var options = {
+      wrapperClass: 'ispin-wrapper',
+      buttonsClass: 'ispin-button',
+      step: _spin.getAttribute('step') != undefined ? parseFloat(_spin.getAttribute('step')) : 1,
+      min: _spin.getAttribute('min') != undefined ? parseFloat(_spin.getAttribute('min')) : 1,
+      disabled: false,
+      repeatInterval: 200,
+      wrapOverflow: true,
+      parse: Number
+    }
+    if (_spin.getAttribute('max') != undefined) options.max = parseFloat(_spin.getAttribute('max'))
+    new ISpin(_spin, options)
+    if (_spin.hasClass('roundedLeft')) {
+      _spin.closest('.ispin-wrapper').addClass('roundedLeft')
+    }
+    if (_spin.hasClass('roundedRight')) {
+      _spin.closest('.ispin-wrapper').addClass('roundedRight')
+    }
+  })
+}
 
 function addPv(_action) {
   var div = '<div class="pv">'
     div += '<div class="form-group">'
-      // Activate
+      // Desactivate
       div += '<div class="col-lg-1">'
         div += '<a class="bt_removeInfo pull-left" style="margin-right: 15px;" data-type="pv"><i class="fas fa-minus-circle"></i></a>'
-        div += '<label class="checkbox-inline"><input type="checkbox" class="pvAttr cmdInfo" data-l1key="power::activate">{{Activer}}</label>'
+        div += '<label class="checkbox-inline"><input type="checkbox" class="pvAttr cmdInfo" data-l1key="power::desactivate">{{Désactiver}}</label>'
       div += '</div>'
       // Power
       div += '<div class="col-lg-3">'
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Puissance}} <i class="fas fa-exclamation-triangle warning" title="'
-          div += "{{Selectionner une commande info/numerique qui contient l'information de puissance.}}"
-          div += '<br>{{Commande obligatoire.}}"></i></span>'
+          div += '{{Commande obligatoire.}}"></i></span>'
           div += '<input class="pvAttr form-control" data-l1key="power::cmd" data-type="pv" />' // cmdAction
           div += '<span class="input-group-btn">'
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="power::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>' //data-l1key="power::cmd"
@@ -337,19 +357,15 @@ function addPv(_action) {
       div += '<div class="col-lg-3">'
         // Voltage
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Tension}} <sup><i class="fas fa-question-circle" title="'
-          div += "{{Selectionner une commande info/numerique qui contient l'information de tension.}}"
-          div += '"></i></sup></span>'
-          div += '<input class="pvAttr form-control" data-l1key="voltage::cmd" data-type="pv" />' // cmdAction
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Tension}} </span>'
+          div += '<input class="pvAttr form-control" data-l1key="voltage::cmd" data-type="pv" />'
           div += '<span class="input-group-btn">'
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="voltage::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
           div += '</span>'
         div += '</div>'
         // Current
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Intensité}} <sup><i class="fas fa-question-circle" title="'
-          div += "{{Selectionner une commande info/numerique qui contient l'information d'intensité.}}"
-          div += '"></i></sup></span>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Intensité}} </span>'
           div += '<input class="pvAttr form-control" data-l1key="current::cmd" data-type="pv" />' // cmdAction
           div += '<span class="input-group-btn">'
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="current::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
@@ -359,9 +375,7 @@ function addPv(_action) {
       div += '<div class="col-lg-3">'
         // Energy
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Energie}} <sup><i class="fas fa-question-circle" title="'
-          div += "{{Selectionner une commande info/numerique qui contient l'information d'énergie.}}"
-          div += '"></i></sup></span>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Energie}} </span>'
           div += '<input class="pvAttr form-control" data-l1key="energy::cmd" data-type="pv" />' // cmdAction
           div += '<span class="input-group-btn">'
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="energy::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
@@ -371,11 +385,10 @@ function addPv(_action) {
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le panneau.}}"></i></sup></span>'
           div += '<div><input class="pvAttr form-control" data-l1key="name"></div>'
-          div += '<span class="input-group-addon" style="min-width: 110px;">Max. <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire le panneau.}}"></i></sup></span>'
+          div += '<span class="input-group-addon" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire le panneau.}}"></i></sup></span>'
           div += '<div class="roundedRight"><input type="number" class="pvAttr form-control roundedRight" data-l1key="maxPower"></div>'
         div += '</div>'
       div += '</div>'
-  
     div += '</div>'
   div += '</div>'
   document.getElementById('div_pv').insertAdjacentHTML('beforeend', div)
@@ -387,27 +400,24 @@ function addPv(_action) {
 function addLoad(_action) {
   var div = '<div class="load">'
     div += '<div class="form-group">'
-      // Activate
+      // Desactivate
       div += '<div class="col-lg-1">'
         div += '<a class="bt_removeInfo pull-left" style="margin-right: 15px;" data-type="load"><i class="fas fa-minus-circle"></i></a>'
-        div += '<label class="checkbox-inline"><input type="checkbox" class="loadAttr cmdInfo" data-l1key="power::activate">{{Activer}}</label>'
+        div += '<label class="checkbox-inline"><input type="checkbox" class="loadAttr cmdInfo" data-l1key="power::desactivate">{{Désactiver}}</label>'
       div += '</div>'
-      // Power
       div += '<div class="col-lg-3">'
+        // Power
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Puissance}} <i class="fas fa-exclamation-triangle warning" title="'
-          div += "{{Selectionner une commande info/numerique qui contient l'information de puissance.}}"
-          div += '<br>{{Commande obligatoire.}}"></i></span>'
-          div += '<input class="loadAttr form-control" data-l1key="power::cmd" data-type="load" />' // cmdAction
+          div += '{{Commande obligatoire.}}"></i></span>'
+          div += '<input class="loadAttr form-control" data-l1key="power::cmd" data-type="load" />'
           div += '<span class="input-group-btn">'
-            div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="power::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>' //data-l1key="power::cmd"
+            div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="power::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
           div += '</span>'
         div += '</div>'
-        // Perso
+        // Energy
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Energie}} <sup><i class="fas fa-question-circle" title="'
-          div += "{{Selectionner une commande info/numerique qui contient l'information d'énergie.}}"
-          div += '"></i></sup></span>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Energie}} </span>'
           div += '<input class="loadAttr form-control" data-l1key="energy::cmd" data-type="load" />' // cmdAction
           div += '<span class="input-group-btn">'
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="energy::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
@@ -415,11 +425,9 @@ function addLoad(_action) {
         div += '</div>'
       div += '</div>'
       div += '<div class="col-lg-3">'
-        // Energy
+        // Perso
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Perso}} <sup><i class="fas fa-question-circle" title="'
-          div += "{{Selectionner une commande info/numerique qui contient l'information perso.}}"
-          div += '"></i></sup></span>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Perso}} </span>'
           div += '<input class="loadAttr form-control" data-l1key="perso::cmd" data-type="load" />' // cmdAction
           div += '<span class="input-group-btn">'
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="perso::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
@@ -427,43 +435,41 @@ function addLoad(_action) {
         div += '</div>'
         // name & Powermax
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le recepteur.}}"></i></sup></span>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le récepteur.}}"></i></sup></span>'
           div += '<div><input class="loadAttr form-control" data-l1key="name"></div>'
-          div += '<span class="input-group-addon" style="min-width: 110px;">Max. <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut consommer le recepteur.}}"></i></sup></span>'
+          div += '<span class="input-group-addon" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut consommer le récepteur.}}"></i></sup></span>'
           div += '<div class="roundedRight"><input type="number" class="loadAttr form-control roundedRight" data-l1key="maxPower"></div>'
         div += '</div>'
       div += '</div>'
-
       div += '<div class="col-lg-3">'
-  div += '<div class="input-group">'
-    div += '<span class="input-group-addon roundedLeft input-group-addon" style="min-width: 110px;">'
-      div += '{{Icône}} 1'
-    div += '</span>'
-    div += '<input class="loadAttr form-control" data-l1key="img::1" disabled>'
-    div += '<span class="input-group-btn">'
-      div += '<a class="btn btn-default bt_library" data-type="img::1" title="{{Bibliothèque}}"><i class="fas fa-photo-video"></i></a>'
-    div += '</span>'
-    div += '<span class="input-group-btn">'
-      div += '<a class="btn btn-default restoreDefaut roundedRight" data-type="img::1" data-defaut="" title="{{Icône par défaut}}">'
-        div += '<i class="fas fa-eraser"></i>'
-      div += '</a>'
-    div += '</span>'
-  div += '</div>'
-  div += '<div class="input-group">'
-    div += '<span class="input-group-addon roundedLeft input-group-addon" style="min-width: 110px;">'
-      div += '{{Icône}} 2'
-    div += '</span>'
-    div += '<input class="loadAttr form-control" data-l1key="img::2" disabled>'
-    div += '<span class="input-group-btn">'
-      div += '<a class="btn btn-default bt_library" data-type="img::2" title="{{Bibliothèque}}"><i class="fas fa-photo-video"></i></a>'
-    div += '</span>'
-    div += '<span class="input-group-btn">'
-      div += '<a class="btn btn-default restoreDefaut roundedRight" data-type="img::2" data-defaut="" title="{{Icône par défaut}}">'
-        div += '<i class="fas fa-eraser"></i>'
-      div += '</a>'
-    div += '</span>'
-      div += '</div>'
-
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft input-group-addon" style="min-width: 110px;">'
+            div += '{{Icône}} 1'
+          div += '</span>'
+          div += '<input class="loadAttr form-control" data-l1key="img::1" disabled>'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default bt_library" data-type="img::1" title="{{Bibliothèque}}"><i class="fas fa-photo-video"></i></a>'
+          div += '</span>'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default restoreDefaut roundedRight" data-type="img::1" data-defaut="" title="{{Icône par défaut}}">'
+              div += '<i class="fas fa-eraser"></i>'
+            div += '</a>'
+          div += '</span>'
+        div += '</div>'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft input-group-addon" style="min-width: 110px;">'
+            div += '{{Icône}} 2'
+          div += '</span>'
+          div += '<input class="loadAttr form-control" data-l1key="img::2" disabled>'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default bt_library" data-type="img::2" title="{{Bibliothèque}}"><i class="fas fa-photo-video"></i></a>'
+          div += '</span>'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default restoreDefaut roundedRight" data-type="img::2" data-defaut="" title="{{Icône par défaut}}">'
+              div += '<i class="fas fa-eraser"></i>'
+            div += '</a>'
+          div += '</span>'
+        div += '</div>'
     div += '</div>'
   div += '</div>'
   document.getElementById('div_load').insertAdjacentHTML('beforeend', div)
@@ -472,50 +478,128 @@ function addLoad(_action) {
   jeedomUtils.initTooltips(currentLoad)
 }
 
+function addPerso(_persoAttr = '') {
+  var div = '<div class="perso">'
+    div += '<div class="form-group">'
+      // Desactivate
+      div += '<div class="col-lg-1">'
+        div += '<a class="bt_removeInfo pull-left" style="margin-right: 15px;" data-type="perso"><i class="fas fa-minus-circle"></i></a>'
+        div += '<label class="checkbox-inline"><input type="checkbox" class="persoAttr cmdInfo" data-l1key="perso::desactivate">{{Désactiver}}</label>'
+      div += '</div>'
+      div += '<div class="col-lg-3">'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Commande}} <sup><i class="fas fa-exclamation-triangle warning" title="'
+          div += '{{Commande obligatoire.}}"></i></sup></span>'
+          div += '<input class="persoAttr form-control" data-l1key="perso::cmd" data-type="perso" />' // cmdAction
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="perso::cmd" data-subtype=""><i class="fas fa-list-alt"></i></a>' //data-l1key="power::cmd"
+          div += '</span>'
+        div += '</div>'
+      div += '</div>'
+      div += '<div class="col-lg-2">'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{X}} <sup><i class="fas fa-exclamation-triangle warning" title="'
+            div += '{{Position horizontale.}}<br>'
+            div += '{{Commande obligatoire.}}'
+          div += '"></i></sup></span>'
+          div += '<input type="number" min="-100" max="400" step="20" class="persoAttr form-control roundedRight ispin" data-l1key="perso::x">'
+        div += '</div>'
+      div += '</div>'
+      div += '<div class="col-lg-2">'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Y}} <sup><i class="fas fa-exclamation-triangle warning" title="'
+            div += '{{Position verticale.}}'
+            div += '<br>{{Commande obligatoire.}}'
+          div += '"></i></sup></span>'
+          div += '<input type="number" min="-100" max="400" step="20" class="persoAttr form-control roundedRight ispin" data-l1key="perso::y">'
+        div += '</div>'
+      div += '</div>'
+      div += '<div class="col-lg-2">'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Taille}} <sup><i class="fas fa-question-circle" title="'
+            div += '{{Taille du texte.}}'
+          div += '"></i></sup></span>'
+          div += '<input type="number" min="7" step="1" max="16" class="persoAttr form-control roundedRight ispin" data-l1key="perso::size" placeholder="16">'
+        div += '</div>'
+      div += '</div>'
+      div += '<div class="col-lg-2">'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Couleur}} </span>'
+          div += '<input type="color" class="persoAttr form-control" value="#808080" data-l1key="perso::color">'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default restoreDefaut roundedRight" data-type="perso::color" data-defaut="#808080" title="{{Couleur par défaut}}"><i class="fas fa-eraser"></i></a>'
+          div += '</span>'
+        div += '</div>'
+      div += '</div>'
+    div += '</div>'
+    div += '<div class="form-group">'
+      // perso
+      div += '<div class="col-lg-4">'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Texte à afficher}} <sup><i class="fas fa-question-circle" title="'
+            div += '{{Texte à afficher}}'
+          div += '"></i></sup></span>'
+          div += '<input class="persoAttr form-control" data-l1key="perso::text" placeholder="">'
+          div += '<span class="input-group-addon" style="min-width: 120px;">{{Taille}} <sup><i class="fas fa-question-circle" title="'
+            div += '{{Taille du texte.}}'
+          div += '"></i></sup></span>'
+          div += '<input type="number" min="7" step="1" max="16" class="persoAttr form-control roundedRight ispin" data-l1key="perso::text::size" placeholder="16">'
+        div += '</div>'
+      div += '</div>'
+    div += '</div>'
+  div += '</div>'
+  document.getElementById('div_perso').insertAdjacentHTML('beforeend', div)
+  var currentPerso = document.querySelectorAll('.perso').last()
+  if (_persoAttr != '') {
+    currentPerso.setJeeValues(_persoAttr, '.persoAttr')
+  }
+  jeedomUtils.initTooltips(currentPerso)
+  powerFlowInitSpinners(currentPerso)
+}
 
 function saveEqLogic(_eqLogic) {
   if (!isset(_eqLogic.configuration)) {
     _eqLogic.configuration = {}
   }
-  _eqLogic.configuration.pv = $('#div_pv .pv').getValues('.pvAttr')
-  _eqLogic.configuration.load = $('#div_load .load').getValues('.loadAttr')
+  _eqLogic.configuration.pv = document.querySelectorAll('.pv').getJeeValues('.pvAttr')
+  _eqLogic.configuration.load = document.querySelectorAll('.load').getJeeValues('.loadAttr')
+  _eqLogic.configuration.perso = document.querySelectorAll('.perso').getJeeValues('.persoAttr')
   return _eqLogic;
 }
 
 new Sortable(document.getElementById('div_pv'), {
-    delay: 50,
-    delayOnTouchOnly: true,
-    draggable: '.pv',
-    filter: '.pvAttr, .btn, label, a',
-    preventOnFilter: false,
-    direction: 'vertical',
-    chosenClass: 'dragSelected',
-    onUpdate: function(evt) {
-      jeeFrontEnd.modifyWithoutSave = true
-    }
-  })
-  new Sortable(document.getElementById('div_load'), {
-    delay: 50,
-    delayOnTouchOnly: true,
-    draggable: '.load',
-    filter: '.loadAttr, .btn, label, a',
-    preventOnFilter: false,
-    direction: 'vertical',
-    chosenClass: 'dragSelected',
-    onUpdate: function(evt) {
-      jeeFrontEnd.modifyWithoutSave = true
-    }
-  })
+  delay: 50,
+  delayOnTouchOnly: true,
+  draggable: '.pv',
+  filter: '.pvAttr, .btn, label, a',
+  preventOnFilter: false,
+  direction: 'vertical',
+  chosenClass: 'dragSelected',
+  onUpdate: function(evt) {
+    jeeFrontEnd.modifyWithoutSave = true
+  }
+})
+new Sortable(document.getElementById('div_load'), {
+  delay: 50,
+  delayOnTouchOnly: true,
+  draggable: '.load',
+  filter: '.loadAttr, .btn, label, a',
+  preventOnFilter: false,
+  direction: 'vertical',
+  chosenClass: 'dragSelected',
+  onUpdate: function(evt) {
+    jeeFrontEnd.modifyWithoutSave = true
+  }
+})
 function prePrintEqLogic(_eqlogicId){
   document.getElementById('div_pageContainer').querySelectorAll('input.eqLogicAttr').forEach(_input => {
     if (_input.getAttribute('type') == 'checkbox' && _input.checked) _input.checked = false
   })
-  console.log(_eqlogicId)
 }
 function printEqLogic(_eqLogic) {
-  console.log(_eqLogic)
   document.getElementById('div_pv').empty()
   document.getElementById('div_load').empty()
+  document.getElementById('div_perso').empty()
   if (isset(_eqLogic.configuration)) {
     if (isset(_eqLogic.configuration.pv)) {
       for (var i in _eqLogic.configuration.pv) {
@@ -525,6 +609,11 @@ function printEqLogic(_eqLogic) {
     if (isset(_eqLogic.configuration.load)) {
       for (var i in _eqLogic.configuration.load) {
         addLoad(_eqLogic.configuration.load[i])
+      }
+    }
+    if (isset(_eqLogic.configuration.perso)) {
+      for (var i in _eqLogic.configuration.perso) {
+        addPerso(_eqLogic.configuration.perso[i])
       }
     }
     if (!isset(_eqLogic.configuration['solar::color'])) document.querySelector('input[data-l2key="solar::color"]').value = '#ffa500'
@@ -543,29 +632,9 @@ function printEqLogic(_eqLogic) {
     if (!isset(_eqLogic.configuration['battery::color::state::100'])) document.querySelector('input[data-l2key="battery::color::state::100"]').value = '#008000'
     if (!isset(_eqLogic.configuration['battery::mppt::color'])) document.querySelector('input[data-l2key="battery::mppt::color"]').value = '#ffa500'
     if (!isset(_eqLogic.configuration['load::color'])) document.querySelector('input[data-l2key="load::color"]').value = '#5fb6ad'
-    
-
+    if (!isset(_eqLogic.configuration['aux::color'])) document.querySelector('input[data-l2key="aux::color"]').value = '#a43df5'
+    if (!isset(_eqLogic.configuration['colorWarning'])) document.querySelector('input[data-l2key="colorWarning"]').value = '#ff0000'
+    if (!isset(_eqLogic.configuration['inverter::color'])) document.querySelector('input[data-l2key="inverter::color"]').value = '#808080'
+    if (!isset(_eqLogic.configuration['inverter::color::in'])) document.querySelector('input[data-l2key="inverter::color::in"]').value = '#000000'
   }
-  /*document.querySelector('.tab-content').addEventListener('change', function(event) {
-    console.log('change')
-    var _target = null
-    if (event.target.getAttribute('data-l2key') && event.target.getAttribute('data-l2key').indexOf("activate") !== -1) return;
-    if (_target = event.target.closest('.form-group')) {
-      if (_target.querySelector('input[type="checkbox"]')) {
-        if (event.target.getAttribute('data-l2key') && event.target.getAttribute('data-l2key').indexOf("cmd") !== -1) {
-          if (event.target.value == '') _target.querySelector('input[type="checkbox"]').checked = false
-          else _target.querySelector('input[type="checkbox"]').checked = true
-        } else if (event.target.getAttribute('data-l1key') && event.target.getAttribute('data-l1key').indexOf("power::cmd") !== -1) {
-          if (event.target.value == '') _target.querySelector('input[type="checkbox"]').checked = false
-          else _target.querySelector('input[type="checkbox"]').checked = true
-        //} else if (event.target.getAttribute('data-l2key') && event.target.getAttribute('data-l2key').indexOf("color") !== -1) {
-          //if (event.target.value == '') _target.querySelector('input[type="checkbox"]').checked = false
-          //else _target.querySelector('input[type="checkbox"]').checked = true
-        }
-        return;
-      }
-    }
-    return;
-  })
-  */
 }
