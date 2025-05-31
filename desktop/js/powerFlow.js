@@ -139,19 +139,25 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
       jeeFrontEnd.modifyWithoutSave = true
     })
     return;
-  } else if (_target = event.target.closest('.bt_library')) {
+    } else if (_target = event.target.closest('.bt_library')) {
     event.stopPropagation()
     event.preventDefault()
     var type = _target.getAttribute('data-type')
     var el = _target.closest('.load').querySelector('.loadAttr[data-l1key="' + type + '"]')
+    var options = _target.getAttribute('data-options')
     if (el) {
       let icon = el.value
       let params = {}
+      params.showIcon = true
       params.icon = false
-      params.img = true
       if (icon.value != '') {
-        params.icon = icon.value
+        params.icon = icon
       }
+      if (options && options == 'noIcon') {
+        params.icon = false
+        params.showIcon = false
+      }
+      params.img = true
       powerFlowChooseIcon(function(_icon) {
         el.value = _icon
       }, params)
