@@ -127,6 +127,7 @@ class powerFlow extends eqLogic
         $replace['#grid_power_cmd#'] = str_replace('#', '', $this->getConfiguration('grid::power::cmd'));
         ///  MAX POWER  \\\
         if ($this->getConfiguration('grid::power::max') != '') $replace['#gridMaxPower#'] = $this->getConfiguration('grid::power::max');
+        if ($this->getConfiguration('grid::invert', 0) == 1) $replace['#PowerInvert#'] = '1';
       }
       ///  DAILY BUY \\\
       if ($this->getConfiguration('grid::daily::buy::cmd') != '' && $this->getConfiguration('grid::daily::buy::desactivate', 1) == 0) {
@@ -196,6 +197,7 @@ class powerFlow extends eqLogic
       if ($this->getConfiguration('battery::power::cmd') != '' && $this->getConfiguration('battery::desactivate', 1) == 0) {
         /// POWER  \\\
         $replace['#battery_power_cmd#'] = str_replace('#', '', $this->getConfiguration('battery::power::cmd'));
+        if ($this->getConfiguration('battery::power::invert', 0) == 1) $replace['#batteryPowerInvert#'] = '1';
         ///  MAX  \\\
         if ($this->getConfiguration('battery::power::max') != '') $replace['#batteryMaxPower#'] = $this->getConfiguration('battery::power::max');
         ///  MPPT  \\\
@@ -341,13 +343,13 @@ class powerFlow extends eqLogic
             $string = '';
             $sep = ',';
             $result_perso[$i] = array('perso::cmd' => str_replace('#', '', $perso['perso::cmd']));
-            $string = $perso['perso::x'] . $sep . $perso['perso::y'] . $sep;
-            $string .= ($perso['perso::size'] != '') ? $perso['perso::size'] : 16;
+            $string = $perso['perso::x'];
+            $string .= $sep . $perso['perso::y'];
+            $string .= $sep . (($perso['perso::size'] != '') ? $perso['perso::size'] : 16);
             $string .= $sep . $perso['perso::color'];
-            if ($perso['perso::text'] != '') {
-              $string .= $sep . $perso['perso::text'] . $sep;
-              $string .= ($perso['perso::text::size'] != '') ? $perso['perso::text::size'] : 16;
-            }
+            $string .= $sep . $perso['perso::text'];
+            $string .= $sep . (($perso['perso::text::size'] != '') ? $perso['perso::text::size'] : (($perso['perso::size'] != '') ? $perso['perso::size'] : 16));
+            $string .= $sep . $perso['perso::text::position'];
             $result_perso[$i] = $result_perso[$i] + array('params' => $string);
             $i++;
           }
