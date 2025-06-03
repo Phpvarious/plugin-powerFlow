@@ -43,15 +43,6 @@ class powerFlow extends eqLogic
 		return $res;
 	}
 
-	/**
-	 * Core callback for the plugin cron every five minutes
-	 
-	public static function cron()
-	{
-		log::add(__CLASS__, 'debug', '┌──:fg-success: cron5() :/fg:──');
-		log::add(__CLASS__, 'debug', '└───────────────────────');
-	}
-
 	/*     * *********************Méthodes d'instance************************* */
 
 	/**
@@ -60,21 +51,6 @@ class powerFlow extends eqLogic
 	public function postSave()
 	{
 		log::add(__CLASS__, 'debug', '┌──:fg-success: postSave() :/fg:──');
-		/* Refresh */
-		$logicalId = 'refresh';
-		$cmd = $this->getCmd(null, $logicalId);
-		/*if (!is_object($cmd)) {
-			$cmd = new powerFlowCmd();
-			$cmd->setIsVisible(1);
-			$cmd->setName(__('Rafraichir', __FILE__));
-			$cmd->setLogicalId($logicalId);
-			$cmd->setOrder($i);
-		}
-		$cmd->setEqLogic_id($this->getId());
-		$cmd->setType('action');
-		$cmd->setSubType('other');
-		if ($cmd->getChanged() === true) $cmd->save();
-*/
 		log::add(__CLASS__, 'debug', '└────────────────────');
 	}
   
@@ -355,7 +331,7 @@ class powerFlow extends eqLogic
           }
         }
       }
-      log::add('powerFlow', 'debug', '$string -> ' . json_encode($result_perso));
+      //log::add('powerFlow', 'debug', '$string -> ' . json_encode($result_perso));
       $replace['#persoarray#'] = json_encode($result_perso);
       ////////////////////////
       
