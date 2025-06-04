@@ -34,14 +34,13 @@ $xml_url = __DIR__ . '/../../desktop/images/icon.svg';
 //$xml_url = __DIR__ . '/../../core/template/dashboard/icon.svg';
 log::add('powerFlow', 'debug', $xml_url);
 $contenu = simplexml_load_file($xml_url);
-foreach($contenu as $icon){
+foreach ($contenu as $icon) {
   if (isset($icon['id'])) {
     $nameIcon = str_replace('icon-', '', $icon['id']);
     $nameIconTranslate = __($nameIcon, __FILE__);
     if (isset($icon['data-categorie'])) {
       $icon_Struct[ucfirst(__($icon['data-categorie'], __FILE__))][] = array($nameIcon => $nameIconTranslate);
-    }
-    else $icon_Struct[__('Autre', __FILE__)][] = array($nameIcon => __($nameIcon, __FILE__));
+    } else $icon_Struct[__('Autre', __FILE__)][] = array($nameIcon => __($nameIcon, __FILE__));
   }
 }
 ksort($icon_Struct);
@@ -153,7 +152,7 @@ include_file('3rdparty', 'tree/tree', 'js');
         btTarget.append(modalFooter.querySelector('button[data-type="confirm"]'))
         //modal.querySelector('.jeeDialogContent').style.overflowY = 'hidden'
         //document.getElementById('sel_colorIcon').selectedIndex = 1
-          modal.querySelector('.jeeDialogContent').style.overflow = 'unset'
+        modal.querySelector('.jeeDialogContent').style.overflow = 'unset'
       },
       //Tree builders:
       setIconTree: function() {
@@ -194,9 +193,9 @@ include_file('3rdparty', 'tree/tree', 'js');
             const tagDiv = document.createElement('div');
             tagDiv.className = 'divIconSel cursor text-center ' + keyClass + selected;
             const tagSvg = document.createElement('svg');
-            
-            var svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg'), 
-            useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+
+            var svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+              useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use');
             svgElem.setAttribute('width', '32')
             svgElem.setAttribute('height', '32')
             svgElem.setAttribute('fill', 'var(--txt-color)')
