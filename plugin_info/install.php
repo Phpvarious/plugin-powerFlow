@@ -16,12 +16,6 @@
  */
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
-function powerFlow_install()
-{
+function powerFlow_install() {}
 
-}
-
-function powerFlow_update()
-{
-
-}
+function powerFlow_update() {}
