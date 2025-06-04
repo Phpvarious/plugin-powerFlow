@@ -129,17 +129,18 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
     event.preventDefault()
     var type = _target.getAttribute('data-type')
     var el = _target.closest('.load').querySelector('.loadAttr[data-l1key="' + type + '"]')
-    jeedom.cmd.getSelectModal({
-      cmd: {
-        type: 'info',
-        subType: _target.getAttribute('data-subtype')
-      }
-    }, function(result) {
-      el.jeeValue(result.human)
-      jeeFrontEnd.modifyWithoutSave = true
-    })
-    return;
-    } else if (_target = event.target.closest('.bt_library')) {
+    if (el) {
+      let params = {}
+      params.type = 'info'
+      if (_target.getAttribute('data-subtype') != '') params.subType = _target.getAttribute('data-subtype')
+      jeedom.cmd.getSelectModal({
+        cmd: params
+      }, function(result) {
+        el.jeeValue(result.human)
+        jeeFrontEnd.modifyWithoutSave = true
+      })
+    }
+  } else if (_target = event.target.closest('.bt_library')) {
     event.stopPropagation()
     event.preventDefault()
     var type = _target.getAttribute('data-type')
@@ -194,7 +195,7 @@ document.querySelector('#div_perso').addEventListener('click', function(event) {
         jeeFrontEnd.modifyWithoutSave = true
       })
     }
-      return;
+    return;
   } else if (_target = event.target.closest('.restoreDefaut[data-type][data-defaut]')) {
     event.stopPropagation()
     event.preventDefault()
@@ -349,8 +350,8 @@ function addPv(_action) {
         div += '<a class="bt_removeInfo pull-left" style="margin-right: 15px;" data-type="pv"><i class="fas fa-minus-circle"></i></a>'
         div += '<label class="checkbox-inline"><input type="checkbox" class="pvAttr cmdInfo" data-l1key="power::desactivate">{{Désactiver}}</label>'
       div += '</div>'
-      // Power
-      div += '<div class="col-lg-3">'
+      div += '<div class="col-lg-4">'
+        // Power
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Puissance}} <i class="fas fa-exclamation-triangle warning" title="'
           div += '{{Commande obligatoire.}}"></i></span>'
@@ -359,8 +360,16 @@ function addPv(_action) {
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="power::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>' //data-l1key="power::cmd"
           div += '</span>'
         div += '</div>'
+        // Energy
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Energie}} </span>'
+          div += '<input class="pvAttr form-control" data-l1key="energy::cmd" data-type="pv" />' // cmdAction
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="energy::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
+          div += '</span>'
+        div += '</div>'
       div += '</div>'
-      div += '<div class="col-lg-3">'
+      div += '<div class="col-lg-4">'
         // Voltage
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Tension}} </span>'
@@ -379,19 +388,14 @@ function addPv(_action) {
         div += '</div>'
       div += '</div>'
       div += '<div class="col-lg-3">'
-        // Energy
-        div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Energie}} </span>'
-          div += '<input class="pvAttr form-control" data-l1key="energy::cmd" data-type="pv" />' // cmdAction
-          div += '<span class="input-group-btn">'
-            div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="energy::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
-          div += '</span>'
-        div += '</div>'
-        // name & Powermax
+        // Name
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le panneau.}}"></i></sup></span>'
-          div += '<div><input class="pvAttr form-control" data-l1key="name"></div>'
-          div += '<span class="input-group-addon" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire le panneau.}}"></i></sup></span>'
+          div += '<div><input class="pvAttr form-control roundedRight" data-l1key="name"></div>'
+        div += '</div>'
+        // Max
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire le panneau.}}"></i></sup></span>'
           div += '<div class="roundedRight"><input type="number" class="pvAttr form-control roundedRight" data-l1key="maxPower"></div>'
         div += '</div>'
       div += '</div>'
@@ -411,7 +415,7 @@ function addLoad(_action) {
         div += '<a class="bt_removeInfo pull-left" style="margin-right: 15px;" data-type="load"><i class="fas fa-minus-circle"></i></a>'
         div += '<label class="checkbox-inline"><input type="checkbox" class="loadAttr cmdInfo" data-l1key="power::desactivate">{{Désactiver}}</label>'
       div += '</div>'
-      div += '<div class="col-lg-3">'
+      div += '<div class="col-lg-4">'
         // Power
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Puissance}} <i class="fas fa-exclamation-triangle warning" title="'
@@ -429,25 +433,29 @@ function addLoad(_action) {
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="energy::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
           div += '</span>'
         div += '</div>'
-      div += '</div>'
-      div += '<div class="col-lg-3">'
         // Perso
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Perso}} </span>'
           div += '<input class="loadAttr form-control" data-l1key="perso::cmd" data-type="load" />' // cmdAction
           div += '<span class="input-group-btn">'
-            div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="perso::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>'
+            div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="perso::cmd" data-subtype=""><i class="fas fa-list-alt"></i></a>'//numeric
           div += '</span>'
-        div += '</div>'
-        // name & Powermax
-        div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le récepteur.}}"></i></sup></span>'
-          div += '<div><input class="loadAttr form-control" data-l1key="name"></div>'
-          div += '<span class="input-group-addon" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut consommer le récepteur.}}"></i></sup></span>'
-          div += '<div class="roundedRight"><input type="number" class="loadAttr form-control roundedRight" data-l1key="maxPower"></div>'
         div += '</div>'
       div += '</div>'
       div += '<div class="col-lg-3">'
+        // Name
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le récepteur.}}"></i></sup></span>'
+          div += '<input class="loadAttr form-control roundedRight" data-l1key="name">'
+        div += '</div>'
+        // Max
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut consommer le récepteur.}}"></i></sup></span>'
+          div += '<input type="number" class="loadAttr form-control roundedRight" data-l1key="maxPower">'
+        div += '</div>'
+      div += '</div>'
+      div += '<div class="col-lg-4">'
+        // Icon 1
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft input-group-addon" style="min-width: 110px;">'
             div += '{{Icône}} 1'
@@ -462,6 +470,7 @@ function addLoad(_action) {
             div += '</a>'
           div += '</span>'
         div += '</div>'
+        // Icon 2
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft input-group-addon" style="min-width: 110px;">'
             div += '{{Icône}} 2'
@@ -492,7 +501,7 @@ function addPerso(_persoAttr = '') {
         div += '<a class="bt_removeInfo pull-left" style="margin-right: 15px;" data-type="perso"><i class="fas fa-minus-circle"></i></a>'
         div += '<label class="checkbox-inline"><input type="checkbox" class="persoAttr cmdInfo" data-l1key="perso::desactivate">{{Désactiver}}</label>'
       div += '</div>'
-      div += '<div class="col-lg-3">'
+      div += '<div class="col-lg-7">'
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Commande}} <sup><i class="fas fa-exclamation-triangle warning" title="'
           div += '{{Commande obligatoire.}}"></i></sup></span>'
@@ -501,34 +510,41 @@ function addPerso(_persoAttr = '') {
             div += '<a class="btn btn-default listCmdInfo roundedRight" data-type="perso::cmd" data-subtype=""><i class="fas fa-list-alt"></i></a>' //data-l1key="power::cmd"
           div += '</span>'
         div += '</div>'
-      div += '</div>'
-      div += '<div class="col-lg-2">'
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{X}} <sup><i class="fas fa-exclamation-triangle warning" title="'
             div += '{{Position horizontale.}}<br>'
             div += '{{Commande obligatoire.}}'
           div += '"></i></sup></span>'
-          div += '<input type="number" min="-100" max="400" step="20" class="persoAttr form-control roundedRight ispin" data-l1key="perso::x">'
-        div += '</div>'
-      div += '</div>'
-      div += '<div class="col-lg-2">'
-        div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Y}} <sup><i class="fas fa-exclamation-triangle warning" title="'
+          div += '<input type="number" min="-100" max="400" step="20" class="persoAttr form-control ispin" data-l1key="perso::x">'
+          div += '<span class="input-group-addon" style="min-width: 120px;">{{Y}} <sup><i class="fas fa-exclamation-triangle warning" title="'
             div += '{{Position verticale.}}'
             div += '<br>{{Commande obligatoire.}}'
           div += '"></i></sup></span>'
-          div += '<input type="number" min="-100" max="400" step="20" class="persoAttr form-control roundedRight ispin" data-l1key="perso::y">'
-        div += '</div>'
-      div += '</div>'
-      div += '<div class="col-lg-2">'
-        div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Taille}} <sup><i class="fas fa-question-circle" title="'
-            div += '{{Taille du texte.}}'
+          div += '<input type="number" min="-100" max="400" step="20" class="persoAttr form-control ispin" data-l1key="perso::y">'
+          div += '<span class="input-group-addon" style="min-width: 120px;">{{Taille}} <sup><i class="fas fa-question-circle" title="'
+            div += '{{Taille du texte de la commande.}}'
           div += '"></i></sup></span>'
           div += '<input type="number" min="7" step="1" max="16" class="persoAttr form-control roundedRight ispin" data-l1key="perso::size" placeholder="16">'
         div += '</div>'
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Texte}} <sup><i class="fas fa-question-circle" title="'
+            div += '{{Texte à afficher}} ({{optionel}})'
+          div += '"></i></sup></span>'
+          div += '<input class="persoAttr form-control" data-l1key="perso::text" placeholder="">'
+          div += '<span class="input-group-addon" style="min-width: 120px;">{{Taille}} <sup><i class="fas fa-question-circle" title="'
+            div += '{{Taille du texte.}}<br>{{Si la position est en ligne, la taille sera la même que celle de la commande}}'
+          div += '"></i></sup></span>'
+          div += '<input type="number" min="7" step="1" max="16" class="persoAttr form-control ispin" data-l1key="perso::text::size" placeholder="16">'
+  
+          div += '<span class="input-group-addon" style="min-width: 120px;">{{Position}} <sup><i class="fas fa-question-circle" title="{{Position du texte par rapport à la commande}}"></i></sup></span>'
+          div += '<select class="persoAttr form-control roundedRight" data-l1key="perso::text::position">'
+            div += '<option value="after">{{Dessous}}</option>'
+            div += '<option value="inline">{{En ligne}}</option>'
+            div += '<option value="before">{{Dessus}}</option>'
+          div += '</select>'
+        div += '</div>'
       div += '</div>'
-      div += '<div class="col-lg-2">'
+      div += '<div class="col-lg-3">'
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Couleur}} </span>'
           div += '<input type="color" class="persoAttr form-control" value="#808080" data-l1key="perso::color">'
@@ -536,22 +552,6 @@ function addPerso(_persoAttr = '') {
             div += '<a class="btn btn-default restoreDefaut roundedRight" data-type="perso::color" data-defaut="#808080" title="{{Couleur par défaut}}"><i class="fas fa-eraser"></i></a>'
           div += '</span>'
         div += '</div>'
-      div += '</div>'
-    div += '</div>'
-    div += '<div class="form-group">'
-      // perso
-      div += '<div class="col-lg-4">'
-        div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Texte à afficher}} <sup><i class="fas fa-question-circle" title="'
-            div += '{{Texte à afficher}}'
-          div += '"></i></sup></span>'
-          div += '<input class="persoAttr form-control" data-l1key="perso::text" placeholder="">'
-          div += '<span class="input-group-addon" style="min-width: 120px;">{{Taille}} <sup><i class="fas fa-question-circle" title="'
-            div += '{{Taille du texte.}}'
-          div += '"></i></sup></span>'
-          div += '<input type="number" min="7" step="1" max="16" class="persoAttr form-control roundedRight ispin" data-l1key="perso::text::size" placeholder="16">'
-        div += '</div>'
-      div += '</div>'
     div += '</div>'
   div += '</div>'
   document.getElementById('div_perso').insertAdjacentHTML('beforeend', div)
