@@ -13,8 +13,6 @@
     "hasOwnDeamon": false,
     "maxDependancyInstallTime": 0,
     "category": "energy",
-    "changelog": "https:\/\/phpvarious.github.io\/documentation\/#language#\/plugins\/energy\/powerFlow\/changelog",
-    "documentation": "https:\/\/phpvarious.github.io\/documentation\/#language#\/plugins\/energy\/powerFlow\/",
     "language": [
         "fr_FR",
         "en_US"
