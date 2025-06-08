@@ -34,11 +34,7 @@ $xml_url = __DIR__ . '/../../desktop/images/icon.svg';
 //$xml_url = __DIR__ . '/../../core/template/dashboard/icon.svg';
 log::add('powerFlow', 'debug', $xml_url);
 $contenu = simplexml_load_file($xml_url);
-<<<<<<< HEAD
-foreach ($contenu as $icon){
-=======
 foreach ($contenu as $icon) {
->>>>>>> 09bf1b5c696b0609542e9683292196349f11ef83
   if (isset($icon['id'])) {
     $nameIcon = str_replace('icon-', '', $icon['id']);
     $nameIconTranslate = __($nameIcon, __FILE__);
