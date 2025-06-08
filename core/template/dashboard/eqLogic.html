@@ -133,11 +133,26 @@
       function getLabel(key){
         return labelsList.find(item => item.key.toLowerCase() === key.toLowerCase())?labelsList.find(item => item.key.toLowerCase() === key.toLowerCase()).data.label:'label-error#uid#';
       }
+      /*
       function trunc#uid#(value = 0, trunc = 1, forceDec = false) {
         trunc = (trunc == 0) ? 1 : (trunc == 1) ? 10 : (trunc == 2) ? 100 : (trunc == 3) ? 1000 : 10
         var result = 0
         if (value === null || value == '' || (isNaN(value) == true)) value = 0
         result = Math.trunc(value * trunc) / trunc
+        result = (forceDec && forceDec >= 1 && Number.isInteger(result)) ? result.toFixed(forceDec) : result
+        return result;
+      }
+      */
+      function trunc#uid#(value = 0, trunc = 1, forceDec = false) {
+        trunc = Math.min(trunc, 3)
+        var result = 0
+        if (value === null || value == '' || (isNaN(value) == true)) value = 0
+        let dec = value.toString().includes('.') ? (value.toString().length - 1) - value.toString().indexOf('.') : 0
+        if (dec > trunc) {
+          result = value.toString().substring(0, value.toString().indexOf('.') + 1 + trunc)
+        } else {
+          result = value
+        }
         result = (forceDec && forceDec >= 1 && Number.isInteger(result)) ? result.toFixed(forceDec) : result
         return result;
       }
@@ -161,16 +176,16 @@
         } else result.value = value //Math.trunc(value * trunc) / trunc
         return result;
       }
-    function autoValueFormat#uid#(value, mod = 1000, maxdiv = 10) {
-      let val = 0
-      if (value < 0) val = parseFloat(-value)
-      else val = parseFloat(value)
-      for (div = 0; div < maxdiv && val >= mod; div++) {
-        val = parseFloat(val / mod)
+      function autoValueFormat#uid#(value, mod = 1000, maxdiv = 10) {
+        let val = 0
+        if (value < 0) val = parseFloat(-value)
+        else val = parseFloat(value)
+        for (div = 0; div < maxdiv && val >= mod; div++) {
+          val = parseFloat(val / mod)
+        }
+        if (value < 0) val = -val
+        return Array(val, div);
       }
-      if (value < 0) val = -val
-      return Array(val, div);
-    }
     function getBatteryIcon#uid#(value=false, full_capacity=80, empty_capacity=30, icon_perso=false) {
       log#uid#('| getBatteryIcon() -> ' + value + ' | ' + full_capacity + ' | ' + empty_capacity + ' | ' + icon_perso)
       let available = full_capacity - empty_capacity
@@ -211,6 +226,7 @@
       activateGauge: true,
       activateGaugeRatio: true,
       formatMillier: false,
+      powerTrunc: 2,
       inverter: {
         autarky: 'no', // no, energy, power
         autarky_state: 10, // affiché si autarky = energy
@@ -508,7 +524,10 @@
               } else {
                 config#uid#.grid.power = isNaN(parseFloat(powerValue)) ? 0 : parseFloat(powerValue)
               }
-              
+              if (config#uid#.grid.power_unit == 'kW') {
+                config#uid#.grid.power = config#uid#.grid.power * 1000
+                config#uid#.grid.power_unit = 'W'
+              }
               config#uid#.has_grid = true
               config#uid#.grid.has_grid_power = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
@@ -517,10 +536,13 @@
                 } else {
                   config#uid#.grid.power = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
                 }
-                let PowerTrunc = trunc#uid#(config#uid#.grid.power, 1)
-                let PowerAbs = Math.abs(PowerTrunc)
+                if (_options.raw_unit == 'kW') {
+                  config#uid#.grid.power = config#uid#.grid.power * 1000
+                }
+                let power = autoValueArray#uid#(config#uid#.grid.power, config#uid#.grid.power_unit)
+                let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
                 if (is_object(cmd = document.getElementById("grid_power#uid#"))) {
-                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.grid.power_unit
+                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
                   calculateGrid#uid#('grid power')
                 }
               })
@@ -637,6 +659,10 @@
               } else {
                 config#uid#.battery.power.state = isNaN(parseFloat(powerValue)) ? 0 : parseFloat(powerValue)
               }
+              if (config#uid#.battery.power.unit == 'kW') {
+                config#uid#.battery.power.state = config#uid#.battery.power.state * 1000
+                config#uid#.battery.power.unit = 'W'
+              }
               config#uid#.has_battery = true
               config#uid#.battery.power.show = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
@@ -646,8 +672,12 @@
                 } else {
                   config#uid#.battery.power.state = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
                 }
-                let batteryValue = Math.abs(config#uid#.battery.power.state)
-                if (is_object(cmd = document.getElementById("battery_power#uid#"))) cmd.innerHTML = formatMillier(trunc#uid#(parseFloat(batteryValue),1), config#uid#.formatMillier) + ' ' + config#uid#.battery.power.unit
+                if (_options.raw_unit == 'kW') {
+                  config#uid#.battery.power.state = config#uid#.battery.power.state * 1000
+                }
+                let power = autoValueArray#uid#(config#uid#.battery.power.state, config#uid#.battery.power.unit)
+                let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+                if (is_object(cmd = document.getElementById("battery_power#uid#"))) cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
                 if (config#uid#.has_battery) calculateBattery#uid#('battery power')
               })
             }
@@ -828,13 +858,22 @@
             async: false,
             success:  function(power) {
               config#uid#.battery.mppt.power.state = isNaN(parseFloat(power)) ? 0 : parseFloat(power)
+              if (config#uid#.battery.mppt.power.unit == 'kW') {
+                config#uid#.battery.mppt.power.state = config#uid#.battery.mppt.power.state * 1000
+                config#uid#.battery.mppt.power.unit = 'W'
+              }
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.battery.mppt.power.state = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                if (config#uid#.has_battery && is_object(cmd = document.getElementById("battery_mppt_power-#uid#"))) {
-                  cmd.innerHTML = formatMillier(config#uid#.battery.mppt.power.state, config#uid#.formatMillier) + ' ' + config#uid#.battery.mppt.power.unit
+                if (_options.raw_unit == 'kW') {
+                  config#uid#.battery.mppt.power.state = config#uid#.battery.mppt.power.state * 1000
+                }
+                let power = autoValueArray#uid#(config#uid#.battery.mppt.power.state, config#uid#.battery.mppt.power.unit)
+                let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+                if (is_object(cmd = document.getElementById("battery_mppt_power-#uid#"))) {
+                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
                   if (config#uid#.battery.mppt.power.state > 0) document.getElementById("dot-battery-mppt-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
                   else document.getElementById("dot-battery-mppt-#uid#")?.setAttribute("fill", "transparent")
-                  if (config#uid#.has_battery) calculateBattery#uid#('battery mppt power')
+                  calculateBattery#uid#('battery mppt power')
                 }
               })  
             }
@@ -889,9 +928,21 @@
               config#uid#.solar.power = isNaN(parseFloat(powerValue)) ? 0 : parseFloat(powerValue)
               config#uid#.has_solar = true
               config#uid#.solar.has_pv_power = true
+              if (config#uid#.solar.power_unit == 'kW') {
+                config#uid#.solar.power = config#uid#.solar.power * 1000
+                config#uid#.solar.power_unit = 'W'
+              }
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.solar.power = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                if (config#uid#.has_solar) calculatePv#uid#('pv_power')
+                if (_options.raw_unit == 'kW') {
+                  config#uid#.solar.power = config#uid#.solar.power * 1000
+                }
+                let power = autoValueArray#uid#(config#uid#.solar.power, config#uid#.solar.power_unit)
+                let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+                if (is_object(cmd = document.getElementById("pvtotal_power#uid#"))) {
+                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
+                  if (config#uid#.has_solar) calculatePv#uid#('pv_power')
+                }
               })
             }
           })
@@ -960,20 +1011,37 @@
                 success:  function(pvValue) {
                   config#uid#.has_solar = true
                   config#uid#.solars[j][type[0]] = isNaN(parseFloat(pvValue)) ? 0 : parseFloat(pvValue)
+                  if (type[0] == 'power') {
+                    if (config#uid#.solars[j]['power_unit'] == 'kW') {
+                      config#uid#.solars[j]['power'] = config#uid#.solars[j]['power'] * 1000
+                      config#uid#.solars[j]['power_unit'] = 'W'
+                    }
+                  }
                   jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                     config#uid#.solars[num][type[0]] = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
                     let value = autoValueArray#uid#(config#uid#.solars[num][type[0]], config#uid#.solars[num][type[0] + '_unit'])
-                    if (type[0] != 'energy') {
-                      document.getElementById("pv" + num + "_" + type[0] + "#uid#").innerHTML = formatMillier(trunc#uid#(parseFloat(_options.value), 1), config#uid#.formatMillier) + ' ' + config#uid#.solars[num][type[0] + '_unit']
-                    } else {
+                    if (type[0] == 'energy') {
                       document.getElementById("pv" + num + "_" + type[0] + "#uid#").innerHTML = formatMillier(trunc#uid#(value.value, 3, 1), config#uid#.formatMillier) + ' ' + value.unit
+                    } else if (type[0] == 'power') {
+                      if (_options.raw_unit == 'kW') {
+                        config#uid#.solars[num]['power'] = config#uid#.solars[num]['power'] * 1000
+                      }
+                      let power = autoValueArray#uid#(config#uid#.solars[num]['power'], config#uid#.solars[num]['power_unit'])
+                      let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+                      if (is_object(cmd = document.getElementById("pv" + num + "_power#uid#"))) {
+                        cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
+                      }
+                    } else {
+                       document.getElementById("pv" + num + "_" + type[0] + "#uid#").innerHTML = formatMillier(trunc#uid#(parseFloat(_options.value), 1), config#uid#.formatMillier) + ' ' + config#uid#.solars[num][type[0] + '_unit']
                     }
                     if (type[0] == 'power' && config#uid#.has_solar) {
+                      ///  GAUGE  \\\
                       if (isset(config#uid#.solars[num].max_power) && config#uid#.solars[num].max_power && config#uid#.activateGauge) {
                         let gaugePourcent = config#uid#.solars[num][type[0]] * 100 / config#uid#.solars[num].max_power
                         let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
                         document.getElementById("pv" + num + "-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
                       } else document.getElementById("pv" + num + "-rect-gauge-#uid#")?.setAttribute('width', 0)
+                      ///  ALERT  \\\
                       if (isset(config#uid#.solars[num].max_power) && config#uid#.solars[num].max_power && config#uid#.solars[num][type[0]] >= config#uid#.solars[num].max_power) {
                         document.getElementById("pv" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
                         if (config#uid#.blink) {
@@ -1015,12 +1083,19 @@
               config#uid#.load.power = isNaN(parseFloat(powerValue)) ? 0 : parseFloat(powerValue)
               config#uid#.has_load = true
               config#uid#.load.has_load_power = true
+              if (config#uid#.load.power_unit == 'kW') {
+                config#uid#.load.power = config#uid#.load.power * 1000
+                config#uid#.load.power_unit = 'W'
+              }
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.load.power = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                let PowerTrunc = trunc#uid#(config#uid#.load.power, 1)
-                let PowerAbs = (PowerTrunc > 0) ? PowerTrunc : (PowerTrunc < 0) ? (PowerTrunc * -1) : PowerTrunc
+                if (_options.raw_unit == 'kW') {
+                  config#uid#.load.power = config#uid#.load.power * 1000
+                }
+                let power = autoValueArray#uid#(config#uid#.load.power, config#uid#.load.power_unit)
+                let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
                 if (is_object(cmd = document.getElementById("load_power#uid#"))) {
-                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.load.power_unit
+                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
                 }
                 if (config#uid#.load.max_power && config#uid#.load.power >= config#uid#.load.max_power) {
                   document.getElementById("load-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
@@ -1063,7 +1138,7 @@
         }
       })
     }
-    ///  Loads  \\\
+    ///  LOADS  \\\
     if ('#loadarray#' != '#' + 'loadarray#') {
       var obj = JSON.parse(JSON.stringify(#loadarray#))
       config#uid#.load.additional_loads = Object.keys(obj).length
@@ -1105,6 +1180,13 @@
                   } else {
                     config#uid#.loads[j][type[0]] = isNaN(parseFloat(loadValue)) ? 0 : parseFloat(loadValue)
                   }
+                  if (type[0] == 'power') {
+                    if (config#uid#.loads[j]['power_unit'] == 'kW') {
+                      config#uid#.loads[j]['power'] = config#uid#.loads[j]['power'] * 1000
+                      config#uid#.loads[j]['power_unit'] = 'W'
+                    }
+                  }
+                  
                   jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                     if (type[0] == 'perso') {
                       config#uid#.loads[num][type[0]] = _options.value
@@ -1113,7 +1195,14 @@
                     }
                     if (type[0] != 'perso') config#uid#.loads[num][type[0]] = trunc#uid#(config#uid#.loads[num][type[0]], 1)
                     if (type[0] == 'power') {
-                      document.getElementById("ess_load" + num + "#uid#").innerHTML = formatMillier(config#uid#.loads[num][type[0]], config#uid#.formatMillier) + ' ' + config#uid#.loads[num][type[0] + '_unit']
+                      if (_options.raw_unit == 'kW') {
+                        config#uid#.loads[num]['power'] = config#uid#.loads[num]['power'] * 1000
+                      }
+                      let power = autoValueArray#uid#(config#uid#.loads[num]['power'], config#uid#.loads[num]['power_unit'])
+                      let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+                      if (is_object(powerCmd = document.getElementById("ess_load" + num + "#uid#"))) {
+                        powerCmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
+                      }
                       if (config#uid#.load.has_load_power === false) calculateLoad#uid#('load' + num + ' state')
                       // dot \\
                       if (config#uid#.loads[num][type[0]] > 0) document.getElementById("es-dot" + num + "-#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
@@ -1330,14 +1419,24 @@
             async: false,
             success:  function(powerValue) {
               config#uid#.aux.power = isNaN(parseFloat(powerValue)) ? 0 : parseFloat(powerValue)
+              if (config#uid#.aux.power_unit == 'kW') {
+                config#uid#.aux.power = config#uid#.aux.power * 1000
+                config#uid#.aux.power_unit = 'W'
+              }
               config#uid#.has_aux = true
               config#uid#.aux.has_aux_power = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.aux.power = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                let PowerTrunc = trunc#uid#(config#uid#.aux.power, 1)
-                let PowerAbs = (PowerTrunc > 0) ? PowerTrunc : (PowerTrunc < 0) ? (PowerTrunc * -1) : PowerTrunc
+                if (_options.raw_unit == 'kW') {
+                  config#uid#.aux.power = config#uid#.aux.power * 1000
+                }
+                let power = autoValueArray#uid#(config#uid#.aux.power, config#uid#.aux.power_unit)
+                let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+                
+                //let PowerTrunc = trunc#uid#(config#uid#.aux.power, 1)
+                //let PowerAbs = (PowerTrunc > 0) ? PowerTrunc : (PowerTrunc < 0) ? (PowerTrunc * -1) : PowerTrunc
                 if (is_object(cmd = document.getElementById("aux_power#uid#"))) {
-                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.aux.power_unit
+                  cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
                 }
                 if (config#uid#.aux.max_power && config#uid#.aux.power >= config#uid#.aux.max_power) {
                   document.getElementById("aux-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
@@ -1380,26 +1479,25 @@
       })
     }
       
-    ///  Perso  \\\
+    ////////////////////////////////////////////////////////
+    //////////////////////// PERSO /////////////////////////
+    ////////////////////////////////////////////////////////
     if ('#persoarray#' != '#' + 'persoarray#') {
       var obj = JSON.parse(JSON.stringify(#persoarray#))
       for (j in obj) {
         let cmd = obj[j]['perso::cmd']
-        console.log('cmd : ' + cmd)
         let params = obj[j]['params']
         let param = obj[j]['params'].split(",")
         let num = j
-        console.log('params : ' + params)
+        //console.log('params : ' + params)
         jeedom.cmd.byId({
           id: cmd,
           async: false,
           success:  function(cmd) {
-            console.table(cmd)
             jeedom.cmd.execute({
               id: parseInt(cmd.id),
               async: false,
               success:  function(persoValue) {
-                console.log(persoValue)
                 let y_pos = parseFloat(param[1].trim())
                 config#uid#.persos[j] = {}
                 config#uid#.persos[j]['x_value'] = parseFloat(param[0])
@@ -1573,7 +1671,10 @@
             html += (config#uid#.solar.has_pv_power && config#uid#.solar.isHistorized == 1) ? 'history cursor' : '' 
             html += '" display="' + ((config#uid#.solar.mppts == 1) ? 'none' : '') + '"'
             html += (config#uid#.solar.has_pv_power && config#uid#.solar.isHistorized == 1) ? ' data-cmd_id=' + config#uid#.solar.id : ''
-            html += '></text>'
+            html += '>'
+            let power = autoValueArray#uid#(config#uid#.solar.power, config#uid#.solar.power_unit)
+            let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+            html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'
             ///  SOLAR LINE  \\\
             if (config#uid#.solar.mppts > 6) {
               html += '<path id="so-line2#uid#" d="M 239 128 L 239 58" fill="none" stroke="var(--solar_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
@@ -1717,7 +1818,10 @@
             html += (isset(config#uid#.solars[solar]) && isset(config#uid#.solars[solar].power_isHistorized) && config#uid#.solars[solar].power_isHistorized == 1) ? 'history cursor' : ''
             html += '"'
             html += (isset(config#uid#.solars[solar]) && isset(config#uid#.solars[solar].power_id)) ? ' data-cmd_id=' + config#uid#.solars[solar].power_id : ''
-            html += '>' + formatMillier(trunc#uid#(config#uid#.solars[solar].power, 1), config#uid#.formatMillier) + ' ' + config#uid#.solars[solar].power_unit + '</text>'
+            html += '>'
+            let power = autoValueArray#uid#(config#uid#.solars[solar].power, config#uid#.solars[solar].power_unit)
+            let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+            html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'
             ///  PV LINE  \\\
             if (config#uid#.solar.mppts > 1) {
               html += '<path id="pv' + solar + '-line#uid#" d="' + path_solar + '" fill="none" stroke="var(--solar_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke" />'
@@ -1813,7 +1917,10 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             html += '<text id="load_power#uid#" x="338.1" y="232.2" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.load.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--load_colour#uid#)"'
             html += ((config#uid#.load.isHistorized == 1) ? ' data-cmd_id=' + config#uid#.load.id : '')
-            html += '>' + formatMillier(trunc#uid#(config#uid#.load.power, 1), config#uid#.formatMillier) + ' ' + config#uid#.load.power_unit + '</text>'
+            html += '>'
+            let power = autoValueArray#uid#(config#uid#.load.power, config#uid#.load.power_unit)
+            let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+            html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'
             ///////////////
             ///  DAILY  ///
             ///////////////
@@ -1968,7 +2075,10 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               html += ((config#uid#.font_alert && config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? 'var(--color_alerte#uid#)' : 'var(--load_colour#uid#)')
               html += '"'
               html += ((config#uid#.loads[num_load].power_id) ? ' data-cmd_id=' + config#uid#.loads[num_load].power_id : '')
-              html += '>' + formatMillier(trunc#uid#(config#uid#.loads[num_load].power, 1), config#uid#.formatMillier) + ' ' + config#uid#.loads[num_load].power_unit + '</text>'
+              html += '>'
+              let power = autoValueArray#uid#(config#uid#.loads[num_load].power, config#uid#.loads[num_load].power_unit)
+              let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+              html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'
               ///////////////
               ///  LINE   ///
               ///////////////
@@ -2044,7 +2154,9 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               html += '<text id="grid_power#uid#" x="138.1" y="232.2" fill="var(--grid_colour#uid#)" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
               html += (config#uid#.grid.isHistorized == 1) ? 'history cursor' : ''
               html += '" data-cmd_id=' + config#uid#.grid.id + '>'
-              html += formatMillier(Math.abs(config#uid#.grid.power), config#uid#.formatMillier) + ' ' + config#uid#.grid.power_unit + '</text>'
+              let power = autoValueArray#uid#(config#uid#.grid.power, config#uid#.grid.power_unit)
+              let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+              html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'
             }
             ///////////////
             ///  LINE   ///
@@ -2143,7 +2255,9 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               html += '" y="320" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
               html += (config#uid#.battery.power.isHistorized == 1) ? 'history cursor' : ''
               html += '" data-cmd_id="' + config#uid#.battery.power.id + '">'
-              html += formatMillier(Math.abs(config#uid#.battery.power.state), config#uid#.formatMillier) + ' ' + config#uid#.battery.power.unit + '</text>'
+              let power = autoValueArray#uid#(config#uid#.battery.power.state, config#uid#.battery.power.unit)
+              let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+              html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'
             }
             ///////////////
             /// CURRENT ///
@@ -2303,7 +2417,9 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               html += '" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
               html += (config#uid#.battery.mppt.power.isHistorized == 1) ? 'history cursor' : ''
               html += '" data-cmd_id="' + config#uid#.battery.mppt.power.id + '">'
-              html += formatMillier(trunc#uid#(config#uid#.battery.mppt.power.state, 1), config#uid#.formatMillier) + ' ' + config#uid#.battery.mppt.power.unit + '</text>'
+              let power = autoValueArray#uid#(config#uid#.battery.mppt.power.state, config#uid#.battery.mppt.power.unit)
+              let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+              html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'
               ///////////////
               ///  ENERGY ///
               ///////////////
@@ -2344,7 +2460,11 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             ///  POWER  ///
             ///////////////
-            html += '<text id="aux_power#uid#" x="' + ((config#uid#.has_battery) ? '339' : '239') + '" y="320" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.aux.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--aux_colour#uid#)" data-cmd_id=' + config#uid#.aux.id + '>' + formatMillier(trunc#uid#(config#uid#.aux.power, 1), config#uid#.formatMillier) + ' ' + config#uid#.aux.power_unit + '</text>'
+            html += '<text id="aux_power#uid#" x="' + ((config#uid#.has_battery) ? '339' : '239') + '" y="320" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.aux.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--aux_colour#uid#)" data-cmd_id=' + config#uid#.aux.id + '>'
+            let power = autoValueArray#uid#(config#uid#.aux.power, config#uid#.aux.power_unit)
+            let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc))
+            html += formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit + '</text>'  
+            //html += formatMillier(trunc#uid#(config#uid#.aux.power, 1), config#uid#.formatMillier) + ' ' + config#uid#.aux.power_unit + '</text>'
             ///////////////
             ///  LINE   ///
             ///////////////
@@ -2530,15 +2650,24 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             document.getElementById("div_error#uid#").classList.remove("hidden-#uid#")
             document.getElementById("div_error#uid#").innerHTML = 'Attention unité differente entre <b>pv</b>, calcul impossible !!!<br>Corrigez les unités et actualiser le widget'
           } else {
-            config#uid#.solar.power_unit = (differentUnit !== false) ? differentUnit : ''
+            config#uid#.solar.power_unit = 'W'
             config#uid#.solar.power = 0
             for (solar in config#uid#.solars) {
                config#uid#.solar.power = config#uid#.solar.power + (config#uid#.solars[solar].power * 1000)
             }
-            config#uid#.solar.power = trunc#uid#(config#uid#.solar.power / 1000, 1)
+            config#uid#.solar.power = config#uid#.solar.power / 1000
+            let power = autoValueArray#uid#(config#uid#.solar.power, config#uid#.solar.power_unit)
+            let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+            if (is_object(cmdPower = document.getElementById("pvtotal_power#uid#"))) {
+              cmdPower.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
+            }
           }
-        } else {
-          config#uid#.solar.power = trunc#uid#(config#uid#.solar.power, 1)
+          if ("#pvState0Color#" != '#'+'pvState0Color#' && '#pvState0Color#' != '#solarColor#') {
+            if (config#uid#.solars[solar].power > 0) {
+              
+            }
+            
+          }
         }
         
         ///  Gauge  \\\
@@ -2564,8 +2693,6 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             document.getElementById("pv-rect-gauge-#uid#")?.classList.remove("blink#uid#")
           }
         }
-        
-        if (is_object(cmd = document.getElementById("pvtotal_power#uid#"))) cmd.innerHTML = formatMillier(config#uid#.solar.power, config#uid#.formatMillier) + ' ' + config#uid#.solar.power_unit
         log#uid#('| total_pv = ' + config#uid#.solar.power)
         let solar_animation_speed = config#uid#.solar.animation_speed
         log#uid#('| animation_speed = ' + config#uid#.solar.animation_speed)
@@ -2610,15 +2737,20 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
         if(config#uid#.solar.power > 0) {
           document.getElementById("so-dot#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
           document.getElementById("so-dot2#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-          //document.getElementById("so-line#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
-          //document.getElementById("pvtotal_power#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+          if (config#uid#.solar.has_pv_power === false) {
+            document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+            document.getElementById("so-line#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+            document.getElementById("pvtotal_power#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+          }
         }
         else {
           document.getElementById("so-dot#uid#")?.setAttribute("fill", "transparent")
           document.getElementById("so-dot2#uid#")?.setAttribute("fill", "transparent")
-          //document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
-          //document.getElementById("so-line#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
-          //document.getElementById("pvtotal_power#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+          if (config#uid#.solar.has_pv_power === false) {
+            document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
+            document.getElementById("so-line#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
+            document.getElementById("pvtotal_power#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+          }
         }
       }
       log#uid#('└──────────────────────────────────────────────────────')
@@ -2631,9 +2763,9 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
       log#uid#('| ElDomExist ? ' + ElDomExist)
       if (ElDomExist) {  
         if (el != '') log#uid#('| launched by ' + el)
-        log#uid#('| has_load_power ?',config#uid#.load.has_load_power)
+        log#uid#('| has_load_power ? ' + config#uid#.load.has_load_power)
         /// Power \\\
-        if (config#uid#.load.has_load_power === false) { //&& config#uid#.load.additional_loads >= 1
+        if (config#uid#.load.has_load_power === false) {
           var differentUnit = false
           //config#uid#.load.power_unit = config#uid#.loads[1].power_unit
           for (load in config#uid#.loads) {
@@ -2650,13 +2782,17 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             document.getElementById("div_error#uid#")?.classList.remove("hidden-#uid#")
             document.getElementById("div_error#uid#").innerHTML = 'Attention unité differente entre <b>load</b>, calcul impossible !!!<br>Corrigez les unités et actualiser le widget'
           } else {
-            config#uid#.load.power_unit = (differentUnit !== false) ? differentUnit : ''
+            config#uid#.load.power_unit = 'W'
             config#uid#.load.power = 0
             for (load in config#uid#.loads) {
                if (isset(config#uid#.loads[load].power)) config#uid#.load.power = config#uid#.load.power + (config#uid#.loads[load].power * 1000)
             }
             config#uid#.load.power = config#uid#.load.power / 1000
-            if (is_object(cmd = document.getElementById("load_power#uid#"))) cmd.innerHTML = formatMillier(config#uid#.load.power, config#uid#.formatMillier) + ' ' + config#uid#.load.power_unit
+            let power = autoValueArray#uid#(config#uid#.load.power, config#uid#.load.power_unit)
+            let PowerAbs = Math.abs(trunc#uid#(power.value, config#uid#.powerTrunc)) //for display
+            if (is_object(cmd = document.getElementById("load_power#uid#"))) {
+              cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
+            }
           }
         }
         ///  Gauge  \\\

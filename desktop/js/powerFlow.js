@@ -597,6 +597,18 @@ new Sortable(document.getElementById('div_load'), {
     jeeFrontEnd.modifyWithoutSave = true
   }
 })
+new Sortable(document.getElementById('div_perso'), {
+  delay: 50,
+  delayOnTouchOnly: true,
+  draggable: '.perso',
+  filter: '.persoAttr, .btn, label, a',
+  preventOnFilter: false,
+  direction: 'vertical',
+  chosenClass: 'dragSelected',
+  onUpdate: function(evt) {
+    jeeFrontEnd.modifyWithoutSave = true
+  }
+})
 function prePrintEqLogic(_eqlogicId){
   document.getElementById('div_pageContainer').querySelectorAll('input.eqLogicAttr').forEach(_input => {
     if (_input.getAttribute('type') == 'checkbox' && _input.checked) _input.checked = false
