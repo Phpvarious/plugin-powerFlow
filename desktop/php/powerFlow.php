@@ -735,7 +735,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 							<form class="form-horizontal">
 								<fieldset>
 									<div class="alert alert-info col-xs-12" style="text-align: center;margin-bottom: 15px;">
-										{{A partir de 7 panneaux solaires, l'affichage de ceux-ci sur le widget passe en horizontale au dessus des récepteurs.}}
+										{{A partir de 7 panneaux solaires, l'affichage de ceux-ci sur le widget passe en horizontal au dessus des récepteurs.}}
 									</div>
 									<legend>
 										<a class="btn btn-sm btn-success addPv" data-type="solar" data-subType="numeric"><i class="fas fa-plus-circle"></i> {{Ajout panneau solaire}}</a>
