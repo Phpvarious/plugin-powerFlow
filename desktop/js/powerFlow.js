@@ -131,6 +131,7 @@ document.querySelector('#div_pv').addEventListener('click', function(event) {
         el.jeeValue(result.human)
       })
     }
+    return;
   }
 })
 document.querySelector('#div_load').addEventListener('click', function(event) {
@@ -186,6 +187,23 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
     if (el) {
       el.value = _target.getAttribute('data-defaut')
     }
+    return;
+  } else if (_target = event.target.closest('.bt_selectDataStore[data-type]')) {
+    event.stopPropagation()
+    event.preventDefault()
+    var type = _target.getAttribute('data-type')
+    var el = _target.closest('.load').querySelector('.loadAttr[data-l1key="' + type + '"]')
+    if (el) {
+      jeedom.dataStore.getSelectModal({
+        cmd: {
+          type: 'info'
+        }
+      }, function(result) {
+        if (result.human != el.jeeValue()) jeeFrontEnd.modifyWithoutSave = true
+        el.jeeValue(result.human)
+      })
+    }
+    return;
   }
 })
 document.querySelector('#div_perso').addEventListener('click', function(event) {
@@ -429,7 +447,6 @@ function addPv(_action) {
           div += '<span class="input-group-btn">'
             div += '<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="maxPower" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>'
           div += '</span>'
-  
         div += '</div>'
       div += '</div>'
     div += '</div>'
@@ -484,7 +501,10 @@ function addLoad(_action) {
         // Max
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut consommer le récepteur.}}"></i></sup></span>'
-          div += '<input type="number" class="loadAttr form-control roundedRight" data-l1key="maxPower">'
+          div += '<input class="loadAttr form-control" data-l1key="maxPower">'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="maxPower" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>'
+          div += '</span>'
         div += '</div>'
       div += '</div>'
       div += '<div class="col-lg-4">'
