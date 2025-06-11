@@ -194,8 +194,8 @@ include_file('3rdparty', 'tree/tree', 'js');
             tagDiv.className = 'divIconSel cursor text-center ' + keyClass + selected;
             const tagSvg = document.createElement('svg');
 
-            var svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
-              useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+            var svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            var useElem = document.createElementNS('http://www.w3.org/2000/svg', 'use');
             svgElem.setAttribute('width', '32')
             svgElem.setAttribute('height', '32')
             svgElem.setAttribute('fill', 'var(--txt-color)')

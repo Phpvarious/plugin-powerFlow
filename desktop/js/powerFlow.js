@@ -116,6 +116,22 @@ document.querySelector('#div_pv').addEventListener('click', function(event) {
       jeeFrontEnd.modifyWithoutSave = true
     })
     return;
+  } else if (_target = event.target.closest('.bt_selectDataStore[data-type]')) {
+    event.stopPropagation()
+    event.preventDefault()
+    var type = _target.getAttribute('data-type')
+    var el = _target.closest('.pv').querySelector('.pvAttr[data-l1key="' + type + '"]')
+    if (el) {
+      jeedom.dataStore.getSelectModal({
+        cmd: {
+          type: 'info'
+        }
+      }, function(result) {
+        if (result.human != el.jeeValue()) jeeFrontEnd.modifyWithoutSave = true
+        el.jeeValue(result.human)
+      })
+    }
+    return;
   }
 })
 document.querySelector('#div_load').addEventListener('click', function(event) {
@@ -171,6 +187,23 @@ document.querySelector('#div_load').addEventListener('click', function(event) {
     if (el) {
       el.value = _target.getAttribute('data-defaut')
     }
+    return;
+  } else if (_target = event.target.closest('.bt_selectDataStore[data-type]')) {
+    event.stopPropagation()
+    event.preventDefault()
+    var type = _target.getAttribute('data-type')
+    var el = _target.closest('.load').querySelector('.loadAttr[data-l1key="' + type + '"]')
+    if (el) {
+      jeedom.dataStore.getSelectModal({
+        cmd: {
+          type: 'info'
+        }
+      }, function(result) {
+        if (result.human != el.jeeValue()) jeeFrontEnd.modifyWithoutSave = true
+        el.jeeValue(result.human)
+      })
+    }
+    return;
   }
 })
 document.querySelector('#div_perso').addEventListener('click', function(event) {
@@ -250,6 +283,19 @@ document.querySelector('.tab-content').addEventListener('click', function(event)
         el.value = _icon
       }, params)
     }
+  } else if (_target = event.target.closest('.bt_selectDataStore')) {
+    var el = document.querySelector('input[data-l2key="' + _target.getAttribute('data-type') + '"]')
+    if (el) {
+      jeedom.dataStore.getSelectModal({
+        cmd: {
+          type: 'info'
+        }
+      }, function(result) {
+        console.log(result)
+        el.jeeValue(result.human)
+      })
+    }
+    return
   }
   return;
 })
@@ -339,6 +385,7 @@ powerFlowInitSpinners = function(_el) {
     if (_spin.hasClass('roundedRight')) {
       _spin.closest('.ispin-wrapper').addClass('roundedRight')
     }
+    _spin.removeClass('ispin')
   })
 }
 
@@ -395,8 +442,11 @@ function addPv(_action) {
         div += '</div>'
         // Max
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire le panneau.}}"></i></sup></span>'
-          div += '<div class="roundedRight"><input type="number" class="pvAttr form-control roundedRight" data-l1key="maxPower"></div>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Max.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire le panneau.}}"></i></sup></span>'
+          div += '<input class="pvAttr form-control roundedRight" data-l1key="maxPower">'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="maxPower" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>'
+          div += '</span>'
         div += '</div>'
       div += '</div>'
     div += '</div>'
@@ -451,7 +501,10 @@ function addLoad(_action) {
         // Max
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut consommer le récepteur.}}"></i></sup></span>'
-          div += '<input type="number" class="loadAttr form-control roundedRight" data-l1key="maxPower">'
+          div += '<input class="loadAttr form-control" data-l1key="maxPower">'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="maxPower" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>'
+          div += '</span>'
         div += '</div>'
       div += '</div>'
       div += '<div class="col-lg-4">'
@@ -577,7 +630,7 @@ new Sortable(document.getElementById('div_pv'), {
   delay: 50,
   delayOnTouchOnly: true,
   draggable: '.pv',
-  filter: '.pvAttr, .btn, label, a',
+  filter: '.pvAttr, .btn, label, a, i',
   preventOnFilter: false,
   direction: 'vertical',
   chosenClass: 'dragSelected',
@@ -589,7 +642,19 @@ new Sortable(document.getElementById('div_load'), {
   delay: 50,
   delayOnTouchOnly: true,
   draggable: '.load',
-  filter: '.loadAttr, .btn, label, a',
+  filter: '.loadAttr, .btn, label, a, i',
+  preventOnFilter: false,
+  direction: 'vertical',
+  chosenClass: 'dragSelected',
+  onUpdate: function(evt) {
+    jeeFrontEnd.modifyWithoutSave = true
+  }
+})
+new Sortable(document.getElementById('div_perso'), {
+  delay: 50,
+  delayOnTouchOnly: true,
+  draggable: '.perso',
+  filter: '.persoAttr, .btn, label, a, button, i',
   preventOnFilter: false,
   direction: 'vertical',
   chosenClass: 'dragSelected',
@@ -606,6 +671,7 @@ function printEqLogic(_eqLogic) {
   document.getElementById('div_pv').empty()
   document.getElementById('div_load').empty()
   document.getElementById('div_perso').empty()
+  powerFlowInitSpinners(document.getElementById('eqlogictab'))
   if (isset(_eqLogic.configuration)) {
     if (isset(_eqLogic.configuration.pv)) {
       for (var i in _eqLogic.configuration.pv) {
