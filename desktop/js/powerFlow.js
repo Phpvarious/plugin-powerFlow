@@ -501,11 +501,6 @@ function addLoad(_action) {
         div += '</div>'
       div += '</div>'
       div += '<div class="col-lg-3">'
-        // Name
-        div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le récepteur.}}"></i></sup></span>'
-          div += '<input class="loadAttr form-control roundedRight" data-l1key="name">'
-        div += '</div>'
         // Max
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Max.}} <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut consommer le récepteur.}}"></i></sup></span>'
@@ -514,6 +509,20 @@ function addLoad(_action) {
             div += '<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="maxPower" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>'
           div += '</span>'
         div += '</div>'
+        // Alert
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Alerte}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{En alerte si valeur >= a la valeur configurée.}}"></i></sup></span>'
+          div += '<input class="loadAttr form-control" data-l1key="maxAlert">'
+          div += '<span class="input-group-btn">'
+            div += '<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="maxAlert" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>'
+          div += '</span>'
+        div += '</div>'
+        // Name
+        div += '<div class="input-group">'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le récepteur.}}"></i></sup></span>'
+          div += '<input class="loadAttr form-control roundedRight" data-l1key="name">'
+        div += '</div>'
+
       div += '</div>'
       div += '<div class="col-lg-4">'
         // Icon 1
