@@ -456,6 +456,11 @@ $eqLogics = eqLogic::byType('powerFlow');
 												</span>
 											</div>
 										</div>
+										<div class="col-lg-1">
+											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="grid::invert">
+												{{Inverser}} <sup><i class="fas fa-question-circle" title="{{positive}} = {{injection}} / {{négative}} = {{consommation}}"></i></sup>
+											</label>
+										</div>
 										<div class="col-lg-3">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
@@ -467,10 +472,16 @@ $eqLogics = eqLogic::byType('powerFlow');
 												</span>
 											</div>
 										</div>
-										<div class="col-lg-1">
-											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="grid::invert">
-												{{Inverser}} <sup><i class="fas fa-question-circle" title="{{positive}} = {{injection}} / {{négative}} = {{consommation}}"></i></sup>
-											</label>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Alerte.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{En alerte si valeur >= a la valeur configurée.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="grid::power::alert">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="grid::power::alert" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
 										</div>
 									</div>
 								</fieldset>
@@ -624,6 +635,28 @@ $eqLogics = eqLogic::byType('powerFlow');
 												</span>
 											</div>
 										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Max.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire tous les panneaux réunis.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="solar::power::max">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="solar::power::max" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
+										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Alerte.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{En alerte si valeur >= a la valeur configurée.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="solar::power::alert">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="solar::power::alert" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
+										</div>
 									</div>
 								</fieldset>
 							</form>
@@ -654,17 +687,6 @@ $eqLogics = eqLogic::byType('powerFlow');
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="solar::power::cmd" />
 												<span class="input-group-btn">
 													<a class="btn btn-default listCmdInfo roundedRight" data-type="solar::power::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>
-												</span>
-											</div>
-										</div>
-										<div class="col-lg-3">
-											<div class="input-group">
-												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{Max.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire tous les panneaux réunis.}}"></i></sup>
-												</span>
-												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="solar::power::max">
-												<span class="input-group-btn">
-													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="solar::power::max" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
 												</span>
 											</div>
 										</div>
@@ -777,6 +799,17 @@ $eqLogics = eqLogic::byType('powerFlow');
 												</span>
 											</div>
 										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Capacité}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Capacité de la batterie.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="battery::power::capacity">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="battery::power::capacity" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
+										</div>
 									</div>
 								</fieldset>
 							</form>
@@ -809,6 +842,11 @@ $eqLogics = eqLogic::byType('powerFlow');
 												</span>
 											</div>
 										</div>
+										<div class="col-lg-1">
+											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="battery::power::invert">
+												{{Inverser}} <sup><i class="fas fa-question-circle" title="{{positive}} = {{charge}} / {{négative}} = {{décharge}}"></i></sup>
+											</label>
+										</div>
 										<div class="col-lg-3">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
@@ -823,18 +861,13 @@ $eqLogics = eqLogic::byType('powerFlow');
 										<div class="col-lg-3">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{Capacité}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Capacité de la batterie.}}"></i></sup>
+													{{Alerte.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{En alerte si valeur >= a la valeur configurée.}}"></i></sup>
 												</span>
-												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="battery::power::capacity">
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="battery::power::alert">
 												<span class="input-group-btn">
-													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="battery::power::capacity" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="battery::power::alert" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
 												</span>
 											</div>
-										</div>
-										<div class="col-lg-1">
-											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="battery::power::invert">
-												{{Inverser}} <sup><i class="fas fa-question-circle" title="{{positive}} = {{charge}} / {{négative}} = {{décharge}}"></i></sup>
-											</label>
 										</div>
 									</div>
 								</fieldset>
@@ -876,6 +909,28 @@ $eqLogics = eqLogic::byType('powerFlow');
 												<input type="color" class="eqLogicAttr form-control" value="#ffa500" data-l1key="configuration" data-l2key="battery::mppt::color" />
 												<span class="input-group-btn">
 													<a class="btn btn-default restoreDefaut roundedRight" data-type="battery::mppt::color" data-defaut="#ffa500" title="{{Couleur par défaut}}"><i class="fas fa-eraser"></i></a>
+												</span>
+											</div>
+										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Max.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Puissance maximale que peut produire le panneau.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="battery::mppt::power::max">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="battery::mppt::power::max" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
+										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Alerte.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{En alerte si valeur >= a la valeur configurée.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="battery::mppt::power::alert">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="battery::mppt::power::alert" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
 												</span>
 											</div>
 										</div>
@@ -1153,6 +1208,26 @@ $eqLogics = eqLogic::byType('powerFlow');
 												</span>
 											</div>
 										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">{{Max.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Puissance maximale de consommation.}}"></i></sup></span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="load::power::max">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="load::power::max" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
+										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Alerte.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{En alerte si valeur >= a la valeur configurée.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="load::power::alert">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="load::power::alert" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
+										</div>
 									</div>
 								</fieldset>
 							</form>
@@ -1183,15 +1258,6 @@ $eqLogics = eqLogic::byType('powerFlow');
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="load::power::cmd">
 												<span class="input-group-btn">
 													<a class="btn btn-default listCmdInfo roundedRight" data-type="load::power::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>
-												</span>
-											</div>
-										</div>
-										<div class="col-lg-3">
-											<div class="input-group">
-												<span class="input-group-addon roundedLeft" style="min-width: 125px;">{{Max.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{Puissance maximale de consommation.}}"></i></sup></span>
-												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="load::power::max">
-												<span class="input-group-btn">
-													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="load::power::max" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
 												</span>
 											</div>
 										</div>
@@ -1334,6 +1400,17 @@ $eqLogics = eqLogic::byType('powerFlow');
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="aux::power::max">
 												<span class="input-group-btn">
 													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="aux::power::max" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
+												</span>
+											</div>
+										</div>
+										<div class="col-lg-3">
+											<div class="input-group">
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
+													{{Alerte.}} <sub>(W)</sub> <sup><i class="fas fa-question-circle" title="{{En alerte si valeur >= a la valeur configurée.}}"></i></sup>
+												</span>
+												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="aux::power::alert">
+												<span class="input-group-btn">
+													<a class="btn btn-default cursor bt_selectDataStore roundedRight" data-type="aux::power::alert" title="{{Choisir une variable}}"><i class="fas fa-calculator"></i></a>
 												</span>
 											</div>
 										</div>

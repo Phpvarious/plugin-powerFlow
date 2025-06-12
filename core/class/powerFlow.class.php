@@ -155,6 +155,17 @@ class powerFlow extends eqLogic
 			if ($this->getConfiguration('grid::power::cmd') != '') {
 				if (preg_match("/^\#(\d+)\#$/", $this->getConfiguration('grid::power::cmd', ''), $id)) {
 					$replace['#grid_power_cmd#'] = $id[1];
+					///  ALERT POWER  \\\
+					if ($this->getConfiguration('grid::power::alert') != '') {
+						if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('grid::power::alert', ''), $dataStore)) {
+							$result = jeedom::evaluateExpression($dataStore[1]);
+							if (is_numeric($result)) {
+								$replace['#gridAlertPower#'] = $result;
+							} else log::add(__CLASS__, 'debug', '| KO  grid::power::alert [' . $dataStore[1] . '] not numeric !');
+						} else if (is_numeric($this->getConfiguration('grid::power::alert'))) {
+							$replace['#gridAlertPower#'] = $this->getConfiguration('grid::power::alert');
+						} else log::add(__CLASS__, 'debug', '| KO  grid::power::alert not numeric !');
+					}
 					///  MAX POWER  \\\
 					if ($this->getConfiguration('grid::power::max') != '') {
 						if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('grid::power::max', ''), $dataStore)) {
@@ -205,6 +216,7 @@ class powerFlow extends eqLogic
 		////////////// SOLAR ////////////////
 		/////////////////////////////////////
 		$has_solar = false;
+
 		///  SOLAR POWER  \\\
 		if ($this->getConfiguration('solar::power::desactivate', 1) == 0) {
 			if ($this->getConfiguration('solar::power::cmd') != '') {
@@ -214,31 +226,43 @@ class powerFlow extends eqLogic
 				} else log::add(__CLASS__, 'debug', '| KO  solar::power::cmd not command valid !');
 			}
 		}
-		///  SOLAR Pvs  \\\
+		///  COLOR  \\\
+		if ($this->getConfiguration('solar::color') != '') $replace['#solarColor#'] = $this->getConfiguration('solar::color');
+		if ($this->getConfiguration('solar::color::hide', 0) == 1) {
+			$replace['#pvState0Color#'] = '#ffffff00';
+		} else if ($this->getConfiguration('solar::color::0') != '') {
+			$replace['#pvState0Color#'] = $this->getConfiguration('solar::color::0');
+		}
+		///  PVs  \\\
 		$result_pv = array();
 		if ($this->getConfiguration('pv','') != '' && count($this->getConfiguration('pv')) > 0) {
 			$i = 1;
 			$i2 = 1;
 			foreach ($this->getConfiguration('pv') as $pv) {
 				if ($pv['power::desactivate'] == 0) {
+					///  PV POWER  \\\
 					if ($pv['power::cmd'] != '') {
 						if (preg_match("/^\#(\d+)\#$/", $pv['power::cmd'], $id)) {
 							$result_pv[$i] = array('power::cmd' => $id[1]);
+							///  PV VOLTAGE  \\\
 							if ($pv['voltage::cmd'] != '') {
 								if (preg_match("/^\#(\d+)\#$/", $pv['voltage::cmd'], $voltageId)) {
 									$result_pv[$i] = $result_pv[$i] + array('voltage::cmd' => $voltageId[1]);
 								} else log::add(__CLASS__, 'debug', '| KO  Solar N° ' . $i2 . ' - voltage::cmd not command valid !');
 							}
+							///  PV CURRENT  \\\
 							if ($pv['current::cmd'] != '') {
 								if (preg_match("/^\#(\d+)\#$/", $pv['current::cmd'], $currentId)) {
 									$result_pv[$i] = $result_pv[$i] + array('current::cmd' => $currentId[1]);
 								} else log::add(__CLASS__, 'debug', '| KO  Solar N° ' . $i2 . ' - current::cmd not command valid !');
 							}
+							///  PV DAILY  \\\
 							if ($pv['energy::cmd'] != '') {
 								if (preg_match("/^\#(\d+)\#$/", $pv['energy::cmd'], $energyId)) {
 									$result_pv[$i] = $result_pv[$i] + array('energy::cmd' => $energyId[1]);
 								} else log::add(__CLASS__, 'debug', '| KO  Solar N° ' . $i2 . ' - energy::cmd not command valid !');
 							}
+							///  PV MAX POWER  \\\
 							if (preg_match("/^\#(variable\(.*?\))\#$/", $pv['maxPower'], $dataStore)) {
 								$result = jeedom::evaluateExpression($dataStore[1]);
 								if (is_numeric($result)) {
@@ -253,6 +277,24 @@ class powerFlow extends eqLogic
 								$result_pv[$i] = $result_pv[$i] + array('max_power' => false);
 								if ($pv['maxPower'] != '') log::add(__CLASS__, 'debug', '| KO  Solar N° ' . $i2 . ' - Max power is not numeric !');
 							}
+							///  PV ALERT  \\\
+							if (isset($pv['maxAlert'])) {
+								if (preg_match("/^\#(variable\(.*?\))\#$/", $pv['maxAlert'], $dataStore)) {
+									$result = jeedom::evaluateExpression($dataStore[1]);
+									if (is_numeric($result)) {
+										$result_pv[$i] = $result_pv[$i] + array('max_alert' => $result);
+									} else {
+										log::add(__CLASS__, 'debug', '| KO  Solar N° ' . $i2 . ' - Max alert [' . $dataStore[1] . '] is not numeric !');
+										$result_pv[$i] = $result_pv[$i] + array('max_alert' => false);
+									}
+								} else if (is_numeric($pv['maxAlert'])) {
+									$result_pv[$i] = $result_pv[$i] + array('max_alert' => $pv['maxAlert']);
+								} else {
+									$result_pv[$i] = $result_pv[$i] + array('max_alert' => false);
+									if ($pv['maxAlert'] != '') log::add(__CLASS__, 'debug', '| KO  Solar N° ' . $i2 . ' - Max alert is not numeric !');
+								}
+							} else $result_pv[$i] = $result_pv[$i] + array('max_alert' => false);
+							///  PV NAME  \\\
 							$result_pv[$i] = $result_pv[$i] + array('name' => ($pv['name'] == '') ? false : $pv['name']);
 							$has_solar = true;
 							$i++;
@@ -263,8 +305,20 @@ class powerFlow extends eqLogic
 			}
 		}
 		$replace['#pvarray#'] = json_encode($result_pv);
-		/// SOLAR MAX  \\\
+
 		if ($has_solar) {
+			///  SOLAR ALERT POWER  \\\
+			if ($this->getConfiguration('solar::power::alert') != '') {
+				if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('solar::power::alert', ''), $dataStore)) {
+					$result = jeedom::evaluateExpression($dataStore[1]);
+					if (is_numeric($result)) {
+						$replace['#solarAlertPower#'] = $result;
+					} else log::add(__CLASS__, 'debug', '| KO  solar::power::alert [' . $dataStore[1] . '] not numeric !');
+				} else if (is_numeric($this->getConfiguration('solar::power::alert'))) {
+					$replace['#solarAlertPower#'] = $this->getConfiguration('solar::power::alert');
+				} else log::add(__CLASS__, 'debug', '| KO  solar::power::alert not numeric !');
+			}
+			///  SOLAR MAX  \\\
 			if ($this->getConfiguration('solar::power::max') != '') {
 				if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('solar::power::max', ''), $dataStore)) {
 					$result = jeedom::evaluateExpression($dataStore[1]);
@@ -285,13 +339,7 @@ class powerFlow extends eqLogic
 				} else log::add(__CLASS__, 'debug', '| KO  solar::daily::cmd not command valid !');
 			}
 		}
-		///  SOLAR COLOR  \\\
-		if ($this->getConfiguration('solar::color') != '') $replace['#solarColor#'] = $this->getConfiguration('solar::color');
-		if ($this->getConfiguration('solar::color::hide', 0) == 1) {
-			$replace['#pvState0Color#'] = '#ffffff00';
-		} else if ($this->getConfiguration('solar::color::0') != '') {
-			$replace['#pvState0Color#'] = $this->getConfiguration('solar::color::0');
-		}
+
 		/////////////////////////////////////
 		//////////// BATTERY ////////////////
 		/////////////////////////////////////
@@ -301,6 +349,17 @@ class powerFlow extends eqLogic
 					/// POWER  \\\
 					$replace['#battery_power_cmd#'] = $id[1];
 					if ($this->getConfiguration('battery::power::invert', 0) == 1) $replace['#batteryPowerInvert#'] = '1';
+					///  ALERT POWER  \\\
+					if ($this->getConfiguration('battery::power::alert') != '') {
+						if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('battery::power::alert', ''), $dataStore)) {
+							$result = jeedom::evaluateExpression($dataStore[1]);
+							if (is_numeric($result)) {
+								$replace['#batteryAlertPower#'] = $result;
+							} else log::add(__CLASS__, 'debug', '| KO  battery::power::alert [' . $dataStore[1] . '] not numeric !');
+						} else if (is_numeric($this->getConfiguration('battery::power::alert'))) {
+							$replace['#batteryAlertPower#'] = $this->getConfiguration('battery::power::alert');
+						} else log::add(__CLASS__, 'debug', '| KO  battery::power::alert not numeric !');
+					}
 					///  MAX  \\\
 					if ($this->getConfiguration('battery::power::max') != '') {
 						if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('battery::power::max', ''), $dataStore)) {
@@ -317,6 +376,29 @@ class powerFlow extends eqLogic
 						if ($this->getConfiguration('battery::mppt::power::cmd') != '') {
 							if (preg_match("/^\#(\d+)\#$/", $this->getConfiguration('battery::mppt::power::cmd', ''), $mpptPowerId)) {
 								$replace['#battery_mppt_power_cmd#'] = $mpptPowerId[1];
+
+								///  MAX MPPT \\\
+								if ($this->getConfiguration('battery::mppt::power::max') != '') {
+									if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('battery::mppt::power::max', ''), $dataStore)) {
+										$result = jeedom::evaluateExpression($dataStore[1]);
+										if (is_numeric($result)) {
+											$replace['#batteryMpptMaxPower#'] = $result;
+										} else log::add(__CLASS__, 'debug', '| KO  battery::mppt::power::max [' . $dataStore[1] . '] not numeric !');
+									} else if (is_numeric($this->getConfiguration('battery::mppt::power::max'))) {
+										$replace['#batteryMpptMaxPower#'] = $this->getConfiguration('battery::mppt::power::max');
+									} else log::add(__CLASS__, 'debug', '| KO  battery::power::mppt::max not numeric !');
+								}
+								///  ALERT MPPT POWER  \\\
+								if ($this->getConfiguration('battery::mppt::power::alert') != '') {
+									if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('battery::mppt::power::alert', ''), $dataStore)) {
+										$result = jeedom::evaluateExpression($dataStore[1]);
+										if (is_numeric($result)) {
+											$replace['#batteryMpptAlertPower#'] = $result;
+										} else log::add(__CLASS__, 'debug', '| KO  battery::mppt::power::alert [' . $dataStore[1] . '] not numeric !');
+									} else if (is_numeric($this->getConfiguration('battery::mppt::power::alert'))) {
+										$replace['#batteryMpptAlertPower#'] = $this->getConfiguration('battery::mppt::power::alert');
+									} else log::add(__CLASS__, 'debug', '| KO  battery::mppt::power::alert not numeric !');
+								}
 								if ($this->getConfiguration('battery::mppt::color') != '') $replace['#batteryMpptColor#'] = $this->getConfiguration('battery::mppt::color');
 								$replace['#mpptName#'] = $this->getConfiguration('battery::mppt::name', '');
 								if ($this->getConfiguration('battery::mppt::energy::cmd') != '') {
@@ -418,26 +500,19 @@ class powerFlow extends eqLogic
 		/////////////////////////////////////
 		/////////////// LOAD ////////////////
 		/////////////////////////////////////
+		$has_load = false;
+		///  LOAD POWER  \\\
 		if ($this->getConfiguration('load::power::desactivate', 1) == 0) {
 			if ($this->getConfiguration('load::power::cmd') != '') {
 				if (preg_match("/^\#(\d+)\#$/", $this->getConfiguration('load::power::cmd', ''), $id)) {
 					$replace['#load_power_cmd#'] = $id[1];
+					$has_load = true;
 				} else log::add(__CLASS__, 'debug', '| KO  load::power::cmd not command valid !');
 			}
 		}
-		///  COLOR  \\\
+		///  LOAD COLOR  \\\
 		if ($this->getConfiguration('load::color') != '') $replace['#loadColor#'] = $this->getConfiguration('load::color');
-		///  MAX  \\\
-		if ($this->getConfiguration('load::power::max') != '') {
-			if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('load::power::max', ''), $dataStore)) {
-				$result = jeedom::evaluateExpression($dataStore[1]);
-				if (is_numeric($result)) {
-					$replace['#loadMaxPower#'] = $result;
-				} else log::add(__CLASS__, 'debug', '| KO  load::power::max [' . $dataStore[1] . '] not numeric !');
-			} else if (is_numeric($this->getConfiguration('load::power::max'))) {
-				$replace['#loadMaxPower#'] = $this->getConfiguration('load::power::max');
-			} else log::add(__CLASS__, 'debug', '| KO  load::power::max not numeric !');
-		}
+		
 		/// LOADs  \\\
 		$result_load = array();
 		if ($this->getConfiguration('load','') != '' && count($this->getConfiguration('load')) > 0) {
@@ -447,6 +522,7 @@ class powerFlow extends eqLogic
 			$voltage = array();
 			foreach ($this->getConfiguration('load') as $load) {
 				if ($load['power::desactivate'] == 0) {
+					///  LOAD POWER  \\\
 					if ($load['power::cmd'] != '') {
 						if (preg_match("/^\#(\d+)\#$/", $load['power::cmd'], $id)) {
 							$result_load[$i] = array('power::cmd' => $id[1]);
@@ -455,31 +531,55 @@ class powerFlow extends eqLogic
 									$result_load[$i] = $result_load[$i] + array('perso::cmd' => $persoId[1]);
 								} else log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - perso::cmd not command valid !');
 							}
+							///  LOAD DAILY  \\\
 							if ($load['energy::cmd'] != '') {
 								if (preg_match("/^\#(\d+)\#$/", $load['energy::cmd'], $energyId)) {
 									$result_load[$i] = $result_load[$i] + array('energy::cmd' => $energyId[1]);
 								} else log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - energy::cmd not command valid !');
 							}
-							if (preg_match("/^\#(variable\(.*?\))\#$/", $load['maxPower'], $dataStore)) {
-								$result = jeedom::evaluateExpression($dataStore[1]);
-								if (is_numeric($result)) {
-									$result_load[$i] = $result_load[$i] + array('max_power' => $result);
+							///  LOAD MAX  \\\
+							if (isset($load['maxPower'])) {
+								if (preg_match("/^\#(variable\(.*?\))\#$/", $load['maxPower'], $dataStore)) {
+									$result = jeedom::evaluateExpression($dataStore[1]);
+									if (is_numeric($result)) {
+										$result_load[$i] = $result_load[$i] + array('max_power' => $result);
+									} else {
+										log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - Max power [' . $dataStore[1] . '] is not numeric !');
+										$result_load[$i] = $result_load[$i] + array('max_power' => false);
+									}
+								} else if (is_numeric($load['maxPower'])) {
+									$result_load[$i] = $result_load[$i] + array('max_power' => $load['maxPower']);
 								} else {
-									log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - Max power [' . $dataStore[1] . '] is not numeric !');
 									$result_load[$i] = $result_load[$i] + array('max_power' => false);
+									if ($load['maxPower'] != '') log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - Max power is not numeric !');
 								}
-							} else if (is_numeric($load['maxPower'])) {
-								$result_load[$i] = $result_load[$i] + array('max_power' => $load['maxPower']);
-							} else {
-								$result_load[$i] = $result_load[$i] + array('max_power' => false);
-								if ($load['maxPower'] != '') log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - Max power is not numeric !');
-							}
+							} else $result_load[$i] = $result_load[$i] + array('max_power' => false);
+							///  LOAD ALERT  \\\
+							if (isset($load['maxAlert'])) {
+								if (preg_match("/^\#(variable\(.*?\))\#$/", $load['maxAlert'], $dataStore)) {
+									$result = jeedom::evaluateExpression($dataStore[1]);
+									if (is_numeric($result)) {
+										$result_load[$i] = $result_load[$i] + array('max_alert' => $result);
+									} else {
+										log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - Max alert [' . $dataStore[1] . '] is not numeric !');
+										$result_load[$i] = $result_load[$i] + array('max_alert' => false);
+									}
+								} else if (is_numeric($load['maxAlert'])) {
+									$result_load[$i] = $result_load[$i] + array('max_alert' => $load['maxAlert']);
+								} else {
+									$result_load[$i] = $result_load[$i] + array('max_alert' => false);
+									if ($load['maxAlert'] != '') log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - Max alert is not numeric !');
+								}
+							} else $result_load[$i] = $result_load[$i] + array('max_alert' => false);
+							///  LOAD NAME  \\\
 							$result_load[$i] = $result_load[$i] + array('name' => ($load['name'] == '') ? false : $load['name']);
+							///  LOAD ICON  \\\
 							$icon = '';
 							if ($load['img::1'] != '') $icon .= $load['img::1'];
 							if ($load['img::2'] != '') $icon = ($icon == '') ? $load['img::2'] : $icon . ',' . $load['img::2'];
 							if ($icon == '') $icon = false;
 							$result_load[$i] = $result_load[$i] + array('icon' => $icon);
+							$has_load = true;
 							$i++;
 						} else log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - power::cmd not command valid !');
 					}
@@ -488,6 +588,31 @@ class powerFlow extends eqLogic
 			}
 		}
 		$replace['#loadarray#'] = json_encode($result_load);
+      
+		if ($has_load) {
+			///  LOAD ALERT POWER  \\\
+			if ($this->getConfiguration('load::power::alert') != '') {
+				if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('load::power::alert', ''), $dataStore)) {
+					$result = jeedom::evaluateExpression($dataStore[1]);
+					if (is_numeric($result)) {
+						$replace['#loadAlertPower#'] = $result;
+					} else log::add(__CLASS__, 'debug', '| KO  load::power::alert [' . $dataStore[1] . '] not numeric !');
+				} else if (is_numeric($this->getConfiguration('load::power::alert'))) {
+					$replace['#loadAlertPower#'] = $this->getConfiguration('load::power::alert');
+				} else log::add(__CLASS__, 'debug', '| KO  load::power::alert not numeric !');
+			}
+			///  LOAD MAX  \\\
+			if ($this->getConfiguration('load::power::max') != '') {
+				if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('load::power::max', ''), $dataStore)) {
+					$result = jeedom::evaluateExpression($dataStore[1]);
+					if (is_numeric($result)) {
+						$replace['#loadMaxPower#'] = $result;
+					} else log::add(__CLASS__, 'debug', '| KO  load::power::max [' . $dataStore[1] . '] not numeric !');
+				} else if (is_numeric($this->getConfiguration('load::power::max'))) {
+					$replace['#loadMaxPower#'] = $this->getConfiguration('load::power::max');
+				} else log::add(__CLASS__, 'debug', '| KO  load::power::max not numeric !');
+			}
+		}
 		///  ANIMATE  \\\
 		if ($this->getConfiguration('load::animate::disable', 0) == 1) $replace['#loadAnimate#'] = 0;
 		///  Force4Load  \\\
@@ -563,6 +688,17 @@ class powerFlow extends eqLogic
 					$replace['#aux_power_cmd#'] = $id[1];
 					///  COLOR  \\\
 					if ($this->getConfiguration('aux::color') != '') $replace['#auxColor#'] = $this->getConfiguration('aux::color');
+					///  ALERT POWER  \\\
+					if ($this->getConfiguration('aux::power::alert') != '') {
+						if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('aux::power::alert', ''), $dataStore)) {
+							$result = jeedom::evaluateExpression($dataStore[1]);
+							if (is_numeric($result)) {
+								$replace['#auxAlertPower#'] = $result;
+							} else log::add(__CLASS__, 'debug', '| KO  aux::power::alert [' . $dataStore[1] . '] not numeric !');
+						} else if (is_numeric($this->getConfiguration('aux::power::alert'))) {
+							$replace['#auxAlertPower#'] = $this->getConfiguration('aux::power::alert');
+						} else log::add(__CLASS__, 'debug', '| KO  aux::power::alert not numeric !');
+					}
 					///  MAX  \\\
 					if ($this->getConfiguration('aux::power::max') != '') {
 						if (preg_match("/^\#(variable\(.*?\))\#$/", $this->getConfiguration('aux::power::max', ''), $dataStore)) {
