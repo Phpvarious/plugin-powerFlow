@@ -270,6 +270,8 @@
       battery: {
         animation_speed: 5,
         energy: false,
+        max_power: false,
+        alert_power: false,
         capacity: false,
         autoColorBattery: true,
         power_invert: false,
@@ -326,6 +328,8 @@
           has_mppt_power: false,
           isHistorized:0,
           id: false,
+          max_power: false,
+          alert_power: false,
           power: {
             show: false,
             state: 0,
@@ -357,6 +361,7 @@
       solar: {
         animation_speed: 5,
         max_power: false,
+        alert_power: false,
         power: 0,
         power_unit: '',
         has_pv_power: false,
@@ -377,6 +382,7 @@
       load: {
         animation_speed: 5,
         max_power: false,
+        alert_power: false,
         power: 0,
         power_unit: '',
         has_load_power: false,
@@ -398,6 +404,7 @@
       grid: {
         animation_speed: 5,
         max_power: false,
+        alert_power: false,
         isHistorized:0,
         id: false,
         daily: {
@@ -424,6 +431,7 @@
       aux: {
         type: 'gen',
         max_power: false,
+        alert_power: false,
         status: 'on',
         power: 0,
         power_unit: 'W',
@@ -464,10 +472,12 @@
     if ("#dailySolarText#" != '#'+'dailySolarText#') config#uid#.solar.daily.text = "#dailySolarText#"
     if ("#solarColor#" != '#'+'solarColor#') document.documentElement.style.setProperty('--solar_colour#uid#', '#solarColor#')
     if ("#pvState0Color#" != '#'+'pvState0Color#') document.documentElement.style.setProperty('--solar_colour-0-#uid#', '#pvState0Color#')
+    if (is_numeric('#solarAlertPower#')) config#uid#.solar.alert_power = '#solarAlertPower#'
     ////////////////////////// LOAD ////////////////////////
     if ("#loadAnimate#" != '#'+'loadAnimate#' && "#loadAnimate#" == '0') config#uid#.load.animate_load_enable = 0
     if ("#dailyLoadText#" != '#'+'dailyLoadText#') config#uid#.load.daily.text = "#dailyLoadText#"
     if (is_numeric('#loadMaxPower#')) config#uid#.load.max_power = '#loadMaxPower#'
+    if (is_numeric('#loadAlertPower#')) config#uid#.load.alert_power = '#loadAlertPower#'
     if ("#loadColor#" != '#'+'loadColor#') document.documentElement.style.setProperty('--load_colour#uid#', '#loadColor#')
     if ("#force4Load#" == '1') config#uid#.load.force4load = true
     ////////////////////////// GRID ////////////////////////
@@ -479,14 +489,18 @@
     if ("#gridBuyColor#" != '#'+'gridBuyColor#') document.documentElement.style.setProperty('--grid-buy-colour#uid#', '#gridBuyColor#')
     if ("#noGridColor#" != '#'+'noGridColor#') document.documentElement.style.setProperty('--no_grid_colour#uid#', '#noGridColor#')
     if ("#PowerInvert#" == '1') config#uid#.grid.power_invert = true
+    if (is_numeric('#gridAlertPower#')) config#uid#.grid.alert_power = '#gridAlertPower#'
     ////////////////////////// BATTERY /////////////////////
     if ("#batteryIcon#" != '#'+'batteryIcon#') config#uid#.battery.icon = '#batteryIcon#'
     if ("#dailyBatteryChargeText#" != '#'+'dailyBatteryChargeText#') config#uid#.battery.daily.text_charge = "#dailyBatteryChargeText#"
     if ("#dailyBatteryDischargeText#" != '#'+'dailyBatteryDischargeText#') config#uid#.battery.daily.text_discharge = "#dailyBatteryDischargeText#"
-    if (is_numeric('#batteryMaxPower#')) config#uid#.battery.energy = '#batteryMaxPower#'
+    if (is_numeric('#batteryMaxPower#')) config#uid#.battery.max_power = '#batteryMaxPower#' // config#uid#.battery.energy
+    if (is_numeric('#batteryAlertPower#')) config#uid#.battery.alert_power = '#batteryAlertPower#'
     if (is_numeric('#batteryCapacity#')) config#uid#.battery.capacity = '#batteryCapacity#'
     if (is_numeric('#batterySocShutdown#')) config#uid#.battery.soc.shutdown = '#batterySocShutdown#'
     if ("#mpptName#" != '#'+'mpptName#') config#uid#.battery.mppt.name = "#mpptName#"
+    if (is_numeric('#batteryMpptMaxPower#')) config#uid#.battery.mppt.max_power = '#batteryMpptMaxPower#'
+    if (is_numeric('#batteryMpptAlertPower#')) config#uid#.battery.mppt.alert_power = '#batteryMpptAlertPower#'
     if ("#batteryColor#" != '#'+'batteryColor#') document.documentElement.style.setProperty('--battery_colour#uid#', '#batteryColor#')
     if ("#batteryStateColor#" != '#'+'batteryStateColor#') document.documentElement.style.setProperty('--battery-state#uid#', '#batteryStateColor#') // TODO
     if ("#batteryChargeColor#" != '#'+'batteryChargeColor#') document.documentElement.style.setProperty('--battery-charge#uid#', '#batteryChargeColor#')
@@ -506,6 +520,7 @@
     ////////////////////////// AUX /////////////////////////
     if ("#auxColor#" != '#'+'auxColor#') document.documentElement.style.setProperty('--aux_colour#uid#', '#auxColor#')
     if (is_numeric('#auxMaxPower#')) config#uid#.aux.max_power = '#auxMaxPower#'
+    if (is_numeric('#auxAlertPower#')) config#uid#.aux.alert_power = '#auxAlertPower#'
     if ("#dailyAuxText#" != '#'+'dailyAuxText#') config#uid#.aux.daily.text = "#dailyAuxText#"
       
     ////////////////////////////////////////////////////////
@@ -545,7 +560,7 @@
                 if (_options.raw_unit == 'kW') {
                   config#uid#.grid.power = config#uid#.grid.power * 1000
                 }
-                if (is_object(cmd = document.getElementById("grid_power#uid#"))) {
+                if (is_object(cmd = document.getElementById("grid-power-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let power = autoValueArray#uid#(config#uid#.grid.power, config#uid#.grid.power_unit)
                     let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -578,14 +593,14 @@
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 if (_options.value == 0 || _options.value == '0' || _options.value == 'off') {
                   config#uid#.grid.status = 0
-                  if (config#uid#.blink) document.getElementById("transmission_off#uid#")?.classList.add("blink#uid#")
-                  document.getElementById("transmission_on#uid#")?.classList.add("hidden-#uid#")
-                  document.getElementById("transmission_off#uid#")?.classList.add("no_grid#uid#")
-                  document.getElementById("transmission_off#uid#")?.classList.remove("hidden-#uid#")
+                  if (config#uid#.blink) document.getElementById("grid-transmission-off-#uid#")?.classList.add("blink#uid#")
+                  document.getElementById("grid-transmission-on-#uid#")?.classList.add("hidden-#uid#")
+                  document.getElementById("grid-transmission-off-#uid#")?.classList.add("no_grid#uid#")
+                  document.getElementById("grid-transmission-off-#uid#")?.classList.remove("hidden-#uid#")
                 } else {
                   config#uid#.grid.status = 1
-                  if (config#uid#.blink) document.getElementById("transmission_off#uid#")?.classList.remove("blink#uid#")
-                  document.getElementById("transmission_off#uid#")?.classList.remove("no_grid#uid#")
+                  if (config#uid#.blink) document.getElementById("grid-transmission-off-#uid#")?.classList.remove("blink#uid#")
+                  document.getElementById("grid-transmission-off-#uid#")?.classList.remove("no_grid#uid#")
                   if (config#uid#.grid.has_grid_power) calculateGrid#uid#('grid status')           
                 }
               })
@@ -611,7 +626,7 @@
               config#uid#.grid.daily.show_buy = true
               config#uid#.has_grid = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                if (is_object(cmd = document.getElementById("daily_grid_buy_value#uid#"))) {
+                if (is_object(cmd = document.getElementById("grid-daily-buy-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.grid.daily.buy_unit)
                     let dailyAbs = trunc#uid#(Math.abs(daily.value), 3, 1)
@@ -644,7 +659,7 @@
               config#uid#.grid.daily.show_sell = true
               config#uid#.has_grid = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                if (is_object(cmd = document.getElementById("daily_grid_sell_value#uid#"))) {
+                if (is_object(cmd = document.getElementById("grid-daily-sell-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.grid.daily.sell_unit)
                     let dailyAbs = trunc#uid#(Math.abs(daily.value), 3, 1)
@@ -698,7 +713,7 @@
                 if (_options.raw_unit == 'kW') {
                   config#uid#.battery.power.state = config#uid#.battery.power.state * 1000
                 }
-                if (is_object(cmd = document.getElementById("battery_power#uid#"))) {
+                if (is_object(cmd = document.getElementById("battery-power-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let power = autoValueArray#uid#(config#uid#.battery.power.state, config#uid#.battery.power.unit)
                     let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -733,7 +748,7 @@
               config#uid#.has_battery = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.battery.voltage.state = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                if (is_object(cmd = document.getElementById("battery_voltage#uid#"))) {
+                if (is_object(cmd = document.getElementById("battery-voltage-#uid#"))) {
                   let batteryVoltage = trunc#uid#(config#uid#.battery.voltage.state, config#uid#.powerTrunc)
                   cmd.innerHTML = formatMillier(batteryVoltage, config#uid#.formatMillier) + ' ' + config#uid#.battery.voltage.unit
                 }
@@ -761,7 +776,7 @@
               config#uid#.has_battery = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.battery.current.state = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                if (is_object(cmd = document.getElementById("battery_current#uid#"))) {
+                if (is_object(cmd = document.getElementById("battery-current-#uid#"))) {
                   let batteryCurrent = trunc#uid#(config#uid#.battery.current.state, config#uid#.powerTrunc)
                   cmd.innerHTML = formatMillier(batteryCurrent, config#uid#.formatMillier) + ' ' + config#uid#.battery.current.unit
                 }
@@ -789,7 +804,7 @@
               config#uid#.has_battery = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.battery.temp.state = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                if (is_object(cmd = document.getElementById("battery_temp#uid#"))) {
+                if (is_object(cmd = document.getElementById("battery-temp-#uid#"))) {
                   let batteryTemp = trunc#uid#(config#uid#.battery.temp.state, config#uid#.powerTrunc)
                   cmd.innerHTML = formatMillier(batteryTemp, config#uid#.formatMillier) + ' ' + config#uid#.battery.temp.unit
                 }
@@ -841,7 +856,7 @@
               config#uid#.battery.daily.show_charge = true
               config#uid#.has_battery = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                if (is_object(cmd = document.getElementById("daily_battery_charge_value#uid#"))) {
+                if (is_object(cmd = document.getElementById("battery-daily-charge-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.battery.daily.charge_unit)
                     let dailyAbs = trunc#uid#(daily.value, config#uid#.powerTrunc)
@@ -874,7 +889,7 @@
               config#uid#.battery.daily.show_discharge = true
               config#uid#.has_battery = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                if (is_object(cmd = document.getElementById("daily_battery_discharge_value#uid#"))) {
+                if (is_object(cmd = document.getElementById("battery-daily-discharge-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.battery.daily.discharge_unit)
                     let dailyAbs = trunc#uid#(daily.value, config#uid#.powerTrunc)
@@ -915,7 +930,7 @@
                 if (_options.raw_unit == 'kW') {
                   config#uid#.battery.mppt.power.state = config#uid#.battery.mppt.power.state * 1000
                 }
-                if (is_object(cmd = document.getElementById("battery_mppt_power-#uid#"))) {
+                if (is_object(cmd = document.getElementById("battery-mppt-power-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let power = autoValueArray#uid#(config#uid#.battery.mppt.power.state, config#uid#.battery.mppt.power.unit)
                     let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -924,8 +939,8 @@
                     let PowerAbs = trunc#uid#(Math.abs(config#uid#.battery.mppt.power.state), config#uid#.powerTrunc)
                     cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.battery.mppt.power.unit
                   }
-                  if (config#uid#.battery.mppt.power.state > 0) document.getElementById("dot-battery-mppt-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-                  else document.getElementById("dot-battery-mppt-#uid#")?.setAttribute("fill", "transparent")
+                  if (config#uid#.battery.mppt.power.state > 0) document.getElementById("battery-mppt-dot-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                  else document.getElementById("battery-mppt-dot-#uid#")?.setAttribute("fill", "transparent")
                   calculateBattery#uid#('battery mppt power')
                 }
               })  
@@ -951,7 +966,7 @@
               config#uid#.battery.mppt.energy.state = isNaN(parseFloat(energy)) ? 0 : parseFloat(energy)
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 config#uid#.battery.mppt.energy.state = isNaN(parseFloat(_options.value)) ? 0 : parseFloat(_options.value)
-                if (config#uid#.has_battery && is_object(cmd = document.getElementById("battery_mppt_energy-#uid#"))) {
+                if (config#uid#.has_battery && is_object(cmd = document.getElementById("battery-mppt-daily-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let mppt_energy = autoValueArray#uid#(config#uid#.battery.mppt.energy.state, config#uid#.battery.mppt.energy.unit)
                     let mppt_energyAbs = trunc#uid#(Math.abs(mppt_energy.value), config#uid#.powerTrunc)
@@ -996,7 +1011,7 @@
                 if (_options.raw_unit == 'kW') {
                   config#uid#.solar.power = config#uid#.solar.power * 1000
                 }
-                if (is_object(cmd = document.getElementById("pvtotal_power#uid#"))) {
+                if (is_object(cmd = document.getElementById("pv-power-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let power = autoValueArray#uid#(config#uid#.solar.power, config#uid#.solar.power_unit)
                     let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -1030,7 +1045,7 @@
               config#uid#.solar.daily.show = true
               config#uid#.has_solar = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                if (is_object(cmd = document.getElementById("daily_solar_value#uid#"))) {
+                if (is_object(cmd = document.getElementById("pv-daily-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.solar.daily.unit)
                     let dailyAbs = trunc#uid#(Math.abs(daily.value), config#uid#.powerTrunc)
@@ -1061,6 +1076,10 @@
           let num = j
           if (key == 'max_power') {
             config#uid#.solars[j].max_power = isNaN(parseInt(obj[j][key])) ? false : Math.abs(parseInt(obj[j][key]))
+            continue;
+          }
+          if (key == 'max_alert') {
+            config#uid#.solars[j].max_alert = isNaN(parseInt(obj[j][key])) ? false : Math.abs(parseInt(obj[j][key]))
             continue;
           }
           if (key == 'name') {
@@ -1095,7 +1114,7 @@
                   jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                     if (type[0] == 'energy') {
                       config#uid#.solars[num]['energy'] = isNaN(parseFloat(_options.value)) ? 0 : Math.abs(parseFloat(_options.value))
-                      if (is_object(cmd = document.getElementById("pv" + num + "_energy#uid#"))) {
+                      if (is_object(cmd = document.getElementById("pv" + num + "-daily-#uid#"))) {
                         if (config#uid#.autoConversionUnit) {
                           let energy = autoValueArray#uid#(config#uid#.solars[num]['energy'], config#uid#.solars[num]['energy_unit'])
                           let energyAbs = trunc#uid#(Math.abs(energy.value), config#uid#.powerTrunc)
@@ -1111,7 +1130,8 @@
                       if (_options.raw_unit == 'kW') {
                         config#uid#.solars[num]['power'] = config#uid#.solars[num]['power'] * 1000
                       }
-                      if (is_object(cmd = document.getElementById("pv" + num + "_power#uid#"))) {
+                      if (is_object(cmd = document.getElementById("pv" + num + "-power-#uid#"))) {
+                        ///  POWER  \\\
                         if (config#uid#.autoConversionUnit) {
                           let power = autoValueArray#uid#(config#uid#.solars[num]['power'], config#uid#.solars[num]['power_unit'])
                           let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -1120,33 +1140,65 @@
                           let PowerAbs = trunc#uid#(Math.abs(config#uid#.solars[num]['power']), config#uid#.powerTrunc)
                           cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.solars[num]['power_unit']
                         }
+                        ///  DOT  \\\
+                        if (config#uid#.solars[num]['power'] > 0) {
+                          document.getElementById("pv" + num + "-dot-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                        } else {
+                          document.getElementById("pv" + num + "-dot-#uid#")?.setAttribute("fill", "transparent")
+                        }
+                        ///  COLOR  \\\
+                        if ("#pvState0Color#" != '#'+'pvState0Color#' && '#pvState0Color#' != '#solarColor#') {
+                          if (config#uid#.solars[num].power > 0) {
+                            document.getElementById("pv" + num + "-line-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+                            if (is_object(document.getElementById("pv" + num + "-line-#uid#"))) document.getElementById("pv" + num + "-line-#uid#").style.opacity = 1
+                            document.getElementById("pv" + num + "-voltage-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                            document.getElementById("pv" + num + "-current-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                            document.getElementById("pv" + num + "-daily-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                            document.getElementById("pv" + num + "-name-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                          } else {
+                            document.getElementById("pv" + num + "-line-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
+                            if (is_object(document.getElementById("pv" + num + "-line-#uid#"))) document.getElementById("pv" + num + "-line-#uid#").style.opacity = 0.2
+                            document.getElementById("pv" + num + "-voltage-#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+                            document.getElementById("pv" + num + "-current-#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+                            document.getElementById("pv" + num + "-daily-#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+                            document.getElementById("pv" + num + "-name-#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+                          }
+                        }
+                        ///  ALERT  \\\
+                        if (isset(config#uid#.solars[num].max_alert) && config#uid#.solars[num].max_alert && config#uid#.solars[num][type[0]] >= config#uid#.solars[num].max_alert) {
+                          document.getElementById("pv" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+                          if (config#uid#.blink) {
+                            document.getElementById("pv" + num + "-rect-gauge-#uid#")?.classList.add("blink#uid#")
+                            document.getElementById("pv" + num + "-rect-#uid#")?.classList.add("blink#uid#")
+                          }
+                          if (config#uid#.font_alert) document.getElementById("pv" + num + "-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
+                        } else {
+                          if (config#uid#.solars[num].power > 0) {
+                            document.getElementById("pv" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+                            document.getElementById("pv" + num + "-power-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                          } else {
+                            document.getElementById("pv" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
+                            document.getElementById("pv" + num + "-power-#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+                          }
+                          if (config#uid#.blink) {
+                            document.getElementById("pv" + num + "-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+                            document.getElementById("pv" + num + "-rect-#uid#")?.classList.remove("blink#uid#")
+                          }
+                        }
+                        ///  GAUGE  \\\
+                        if (isset(config#uid#.solars[num].max_power) && config#uid#.solars[num].max_power && config#uid#.activateGauge) {
+                          let gaugePourcent = config#uid#.solars[num][type[0]] * 100 / config#uid#.solars[num].max_power
+                          let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
+                          document.getElementById("pv" + num + "-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
+                        } else document.getElementById("pv" + num + "-rect-gauge-#uid#")?.setAttribute('width', 0)
+                        ///  CALCULATE  \\\
+                        if (config#uid#.has_solar) calculatePv#uid#('pv' + num + '_power')
                       }
                     } else {
                       config#uid#.solars[num][type[0]] = isNaN(parseFloat(_options.value)) ? 0 : Math.abs(parseFloat(_options.value))
-                      if (is_object(cmd = document.getElementById("pv" + num + "_" + type[0] + "#uid#"))) {
+                      if (is_object(cmd = document.getElementById("pv" + num + "-" + type[0] + "-#uid#"))) {
                         cmd.innerHTML = formatMillier(trunc#uid#(parseFloat(_options.value), config#uid#.powerTrunc), config#uid#.formatMillier) + ' ' + config#uid#.solars[num][type[0] + '_unit']
                       }
-                    }
-                    if (type[0] == 'power' && config#uid#.has_solar) {
-                      ///  GAUGE  \\\
-                      if (isset(config#uid#.solars[num].max_power) && config#uid#.solars[num].max_power && config#uid#.activateGauge) {
-                        let gaugePourcent = config#uid#.solars[num][type[0]] * 100 / config#uid#.solars[num].max_power
-                        let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
-                        document.getElementById("pv" + num + "-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
-                      } else document.getElementById("pv" + num + "-rect-gauge-#uid#")?.setAttribute('width', 0)
-                      ///  ALERT  \\\
-                      if (isset(config#uid#.solars[num].max_power) && config#uid#.solars[num].max_power && config#uid#.solars[num][type[0]] >= config#uid#.solars[num].max_power) {
-                        document.getElementById("pv" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
-                        if (config#uid#.blink) {
-                          document.getElementById("pv" + num + "-rect-gauge-#uid#")?.classList.add("blink#uid#")
-                        }
-                      } else {
-                        document.getElementById("pv" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
-                        if (config#uid#.blink) {
-                          document.getElementById("pv" + num + "-rect-gauge-#uid#")?.classList.remove("blink#uid#")
-                        }
-                      }
-                      if (config#uid#.has_solar) calculatePv#uid#('pv' + num + '_power')
                     }
                   })
                 }
@@ -1185,7 +1237,7 @@
                 if (_options.raw_unit == 'kW') {
                   config#uid#.load.power = config#uid#.load.power * 1000
                 }
-                if (is_object(cmd = document.getElementById("load_power#uid#"))) {
+                if (is_object(cmd = document.getElementById("load-power-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let power = autoValueArray#uid#(config#uid#.load.power, config#uid#.load.power_unit)
                     let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -1195,6 +1247,7 @@
                     cmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.load.power_unit
                   }
                 }
+                /*
                 if (config#uid#.load.max_power && config#uid#.load.power >= config#uid#.load.max_power) {
                   document.getElementById("load-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
                   if (config#uid#.blink) document.getElementById("load-rect-#uid#")?.classList.add("blink#uid#")
@@ -1202,6 +1255,7 @@
                   document.getElementById("load-rect-#uid#")?.setAttribute("stroke", "var(--load_colour#uid#)")
                   if (config#uid#.blink) document.getElementById("load-rect-#uid#")?.classList.remove("blink#uid#")
                 }
+                */
                 if (config#uid#.has_load) calculateLoad#uid#('load state')
               })
             }
@@ -1225,18 +1279,18 @@
               config#uid#.load.daily.state = isNaN(parseFloat(dailyValue)) ? 0 : parseFloat(dailyValue)
               config#uid#.load.daily.show = true
               config#uid#.has_load = true
-              jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                if (is_object(cmd = document.getElementById("daily_load_value#uid#"))) {
+                            jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
+                if (is_object(cmd = document.getElementById("load-daily-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
-                    let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.solar.daily.unit)
+                    let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.load.daily.unit)
                     let dailyAbs = trunc#uid#(Math.abs(daily.value), config#uid#.powerTrunc)
                     cmd.innerHTML = formatMillier(dailyAbs, config#uid#.formatMillier) + ' ' + daily.unit
                   } else {
                     let dailyAbs = trunc#uid#(Math.abs((_options.value != undefined) ? parseFloat(_options.value) : 0), config#uid#.powerTrunc)
-                    cmd.innerHTML = formatMillier(dailyAbs, config#uid#.formatMillier) + ' ' + config#uid#.solar.daily.unit
+                    cmd.innerHTML = formatMillier(dailyAbs, config#uid#.formatMillier) + ' ' + config#uid#.load.daily.unit
                   }
                 }
-              }) 
+              })
             }
           })
         }
@@ -1256,6 +1310,10 @@
           let num = j
           if (key == 'max_power') {
             config#uid#.loads[j].max_power = isNaN(parseInt(obj[j][key])) ? false : parseInt(obj[j][key])
+            continue;
+          }
+          if (key == 'max_alert') {
+            config#uid#.loads[j].max_alert = isNaN(parseInt(obj[j][key])) ? false : Math.abs(parseInt(obj[j][key]))
             continue;
           }
           if (key == 'name') {
@@ -1280,69 +1338,22 @@
                 async: false,
                 success:  function(loadValue) {
                   config#uid#.has_load = true
-                  if (type[0] == 'perso') {
-                    config#uid#.loads[j][type[0]] = is_numeric(loadValue) ? parseFloat(loadValue) : loadValue
-                  } else { // power & energy
-                    config#uid#.loads[j][type[0]] = isNaN(parseFloat(loadValue)) ? 0 : Math.abs(parseFloat(loadValue))
-                  }
                   if (type[0] == 'power') {
+                    config#uid#.loads[j][type[0]] = isNaN(parseFloat(loadValue)) ? 0 : Math.abs(parseFloat(loadValue))
                     if (config#uid#.loads[j]['power_unit'] == 'kW') {
                       config#uid#.loads[j]['power'] = config#uid#.loads[j]['power'] * 1000
                       config#uid#.loads[j]['power_unit'] = 'W'
                     }
+                  } else if (type[0] == 'energy') {
+                    config#uid#.loads[j][type[0]] = isNaN(parseFloat(loadValue)) ? 0 : Math.abs(parseFloat(loadValue))
+                  } else {
+                    config#uid#.loads[j][type[0]] = is_numeric(loadValue) ? parseFloat(loadValue) : loadValue
                   }
-                  
                   jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                    if (type[0] == 'perso') {
-                      config#uid#.loads[num][type[0]] = _options.value
-                    } else { // power & energy
-                      config#uid#.loads[num][type[0]] = isNaN(parseFloat(_options.value)) ? 0 : Math.abs(parseFloat(_options.value))
-                    }
-                    //if (type[0] != 'perso') config#uid#.loads[num][type[0]] = trunc#uid#(config#uid#.loads[num][type[0]], 1)
-                    if (type[0] == 'power') {
-                      if (_options.raw_unit == 'kW') {
-                        config#uid#.loads[num]['power'] = config#uid#.loads[num]['power'] * 1000
-                      }
-                      if (is_object(powerCmd = document.getElementById("ess_load" + num + "#uid#"))) {
-                        if (config#uid#.autoConversionUnit) {
-                          let power = autoValueArray#uid#(config#uid#.loads[num]['power'], config#uid#.loads[num]['power_unit'])
-                          let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
-                          powerCmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
-                        } else {
-                          let PowerAbs = trunc#uid#(Math.abs(config#uid#.loads[num]['power']), config#uid#.powerTrunc)
-                          powerCmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.loads[num]['power_unit']
-                        }
-                      }
-                      if (config#uid#.load.has_load_power === false) calculateLoad#uid#('load' + num + ' state')
-                      // dot \\
-                      if (config#uid#.loads[num][type[0]] > 0) document.getElementById("es-dot" + num + "-#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
-                      else document.getElementById("es-dot" + num + "-#uid#")?.setAttribute("fill", "transparent")
-                      // gauge \\
-                      if (config#uid#.loads[num].max_power && config#uid#.activateGauge) {
-                        let gaugePourcent = config#uid#.loads[num][type[0]] * 100 / config#uid#.loads[num].max_power
-                        let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
-                        document.getElementById("load" + num + "-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
-                      } else document.getElementById("load" + num + "-rect-gauge-#uid#")?.setAttribute('width', 0)
-                      // alert \\
-                      if (config#uid#.loads[num].max_power && config#uid#.loads[num].power >= config#uid#.loads[num].max_power) {
-                        document.getElementById("load" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
-                        if (config#uid#.font_alert) document.getElementById("ess_load" + num + "#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
-                        if (config#uid#.blink) {
-                          document.getElementById("load" + num + "-rect-#uid#")?.classList.add("blink#uid#")
-                          document.getElementById("load" + num + "-rect-gauge-#uid#")?.classList.add("blink#uid#")
-                          if (config#uid#.font_alert) document.getElementById("ess_load" + num + "#uid#").classList.add("blink#uid#")
-                        }
-                      } else {
-                        document.getElementById("load" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--load_colour#uid#)")
-                        if (config#uid#.font_alert) document.getElementById("ess_load" + num + "#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
-                        if (config#uid#.blink) {
-                          document.getElementById("load" + num + "-rect-#uid#")?.classList.remove("blink#uid#")
-                          document.getElementById("load" + num + "-rect-gauge-#uid#")?.classList.remove("blink#uid#")
-                          if (config#uid#.font_alert) document.getElementById("ess_load" + num + "#uid#")?.classList.remove("blink#uid#")
-                        }
-                      }
-                    } else if (type[0] == 'energy') {
-                      if (is_object(energyCmd = document.getElementById("load" + num + "_energy#uid#"))) {
+                    if (type[0] == 'energy') {
+                      
+                      config#uid#.loads[num]['energy'] = isNaN(parseFloat(_options.value)) ? 0 : Math.abs(parseFloat(_options.value))
+                      if (is_object(energyCmd = document.getElementById("load" + num + "-daily-#uid#"))) {
                         if (config#uid#.autoConversionUnit) {
                           let loadEnergy = autoValueArray#uid#(config#uid#.loads[num]['energy'], config#uid#.loads[num]['energy_unit'])
                           let PowerAbs = trunc#uid#(Math.abs(loadEnergy.value), config#uid#.powerTrunc)
@@ -1352,14 +1363,55 @@
                           energyCmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.loads[num]['energy_unit']
                         }
                       }
-                    } else if (type[0] == 'perso') {
-                      if (is_object(persoCmd = document.getElementById("load" + num + "_perso#uid#"))) {
-                        
-                        persoCmd.innerHTML = (is_numeric(config#uid#.loads[num]['perso']) ? formatMillier(trunc#uid#(config#uid#.loads[num]['perso'], config#uid#.powerTrunc), config#uid#.formatMillier) : config#uid#.loads[num]['perso']) + ' ' + config#uid#.loads[num]['perso_unit']
+                    } else if (type[0] == 'power') {
+                      ///  POWER  \\\
+                      config#uid#.loads[num]['power'] = isNaN(parseFloat(_options.value)) ? 0 : Math.abs(parseFloat(_options.value))
+                      if (_options.raw_unit == 'kW') {
+                        config#uid#.loads[num]['power'] = config#uid#.loads[num]['power'] * 1000
                       }
+                      if (is_object(powerCmd = document.getElementById("load" + num + "-power-#uid#"))) {
+                        if (config#uid#.autoConversionUnit) {
+                          let power = autoValueArray#uid#(config#uid#.loads[num]['power'], config#uid#.loads[num]['power_unit'])
+                          let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
+                          powerCmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + power.unit
+                        } else {
+                          let PowerAbs = trunc#uid#(Math.abs(config#uid#.loads[num]['power']), config#uid#.powerTrunc)
+                          powerCmd.innerHTML = formatMillier(PowerAbs, config#uid#.formatMillier) + ' ' + config#uid#.loads[num]['power_unit']
+                        }
+                      }
+                      ///  DOT  \\\
+                      if (config#uid#.loads[num]['power'] > 0) document.getElementById("load" + num + "-dot-#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
+                      else document.getElementById("load" + num + "-dot-#uid#")?.setAttribute("fill", "transparent")
+                      ///  ALERT  \\\
+                      if (isset(config#uid#.loads[num].max_alert) && config#uid#.loads[num].max_alert && config#uid#.loads[num].power >= config#uid#.loads[num].max_alert) {
+                        document.getElementById("load" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+                        if (config#uid#.font_alert) document.getElementById("load" + num + "-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
+                        if (config#uid#.blink) {
+                          document.getElementById("load" + num + "-rect-#uid#")?.classList.add("blink#uid#")
+                          document.getElementById("load" + num + "-rect-gauge-#uid#")?.classList.add("blink#uid#")
+                          if (config#uid#.font_alert) document.getElementById("load" + num + "-power-#uid#").classList.add("blink#uid#")
+                        }
+                      } else {
+                        document.getElementById("load" + num + "-rect-#uid#")?.setAttribute("stroke", "var(--load_colour#uid#)")
+                        if (config#uid#.font_alert) document.getElementById("load" + num + "-power-#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
+                        if (config#uid#.blink) {
+                          document.getElementById("load" + num + "-rect-#uid#")?.classList.remove("blink#uid#")
+                          document.getElementById("load" + num + "-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+                          if (config#uid#.font_alert) document.getElementById("load" + num + "-power-#uid#")?.classList.remove("blink#uid#")
+                        }
+                      }
+                      ///  GAUGE  \\\
+                      if (isset(config#uid#.loads[num].max_power) && config#uid#.loads[num].max_power && config#uid#.activateGauge) {
+                        let gaugePourcent = config#uid#.loads[num][type[0]] * 100 / config#uid#.loads[num].max_power
+                        let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
+                        document.getElementById("load" + num + "-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
+                      } else document.getElementById("load" + num + "-rect-gauge-#uid#")?.setAttribute('width', 0)
+                      ///  CALCULATE  \\\
+                      if (config#uid#.load.has_load_power === false) calculateLoad#uid#('load' + num + ' state')
                     } else {
+                      config#uid#.loads[num][type[0]] = _options.value
                       if (is_object(otherCmd = document.getElementById("load" + num + "_" + type[0] + "#uid#"))) {
-                        otherCmd.innerHTML = (is_numeric(config#uid#.loads[num][type[0]]) ? formatMillier(config#uid#.loads[num][type[0]], config#uid#.formatMillier) : config#uid#.loads[num][type[0]]) + ' ' + config#uid#.loads[num][type[0] + '_unit']
+                        otherCmd.innerHTML = (is_numeric(config#uid#.loads[num][type[0]]) ? formatMillier(trunc#uid#(config#uid#.loads[num][type[0]], config#uid#.powerTrunc), config#uid#.formatMillier) : config#uid#.loads[num][type[0]]) + ' ' + config#uid#.loads[num][type[0] + '_unit']
                       }
                     }
                   })
@@ -1553,7 +1605,7 @@
                 if (_options.raw_unit == 'kW') {
                   config#uid#.aux.power = config#uid#.aux.power * 1000
                 }
-                if (is_object(cmd = document.getElementById("aux_power#uid#"))) {
+                if (is_object(cmd = document.getElementById("aux-power-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let power = autoValueArray#uid#(config#uid#.aux.power, config#uid#.aux.power_unit)
                     let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -1593,7 +1645,7 @@
               config#uid#.aux.daily.state = isNaN(parseFloat(dailyValue)) ? 0 : parseFloat(dailyValue)
               config#uid#.aux.daily.show = true
               jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
-                if (is_object(cmd = document.getElementById("daily_aux_value#uid#"))) {
+                if (is_object(cmd = document.getElementById("aux-daily-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.aux.daily.unit)
                     let dailyAbs = trunc#uid#(Math.abs(daily.value), config#uid#.powerTrunc)
@@ -1798,7 +1850,7 @@
             if (config#uid#.activateGauge)
               html += '<rect id="pv-rect-gauge-#uid#" class="op-#uid#' + ((config#uid#.solar.mppts == 1) ? ' hidden-#uid#' : '') + '" x="205" y="128.5" width="0" height="30" rx="4.5" ry="4.5" fill="var(--solar_colour#uid#)" stroke="none" pointer-events="all"/>'
             ///  SOLAR POWER  \\\
-            html += '<text id="pvtotal_power#uid#" fill="var(--solar_colour#uid#)" x="238.8" y="148" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
+            html += '<text id="pv-power-#uid#" fill="var(--solar_colour#uid#)" x="238.8" y="148" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
             html += (config#uid#.solar.has_pv_power && config#uid#.solar.isHistorized == 1) ? 'history cursor' : '' 
             html += '" display="' + ((config#uid#.solar.mppts == 1) ? 'none' : '') + '"'
             html += (config#uid#.solar.has_pv_power && config#uid#.solar.isHistorized == 1) ? ' data-cmd_id=' + config#uid#.solar.id : ''
@@ -1814,17 +1866,17 @@
             html += '</text>'
             ///  SOLAR LINE  \\\
             if (config#uid#.solar.mppts > 6) {
-              html += '<path id="so-line2#uid#" d="M 239 128 L 239 58" fill="none" stroke="var(--solar_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
-              html += '<circle id="so-dot2#uid#" cx="0" cy="0" r="3" fill="transparent">'
-              html += '<animateMotion id="anim_pv2#uid#" dur="' + config#uid#.solar.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
-              html += '<mpath xlink:href="#so-line2#uid#"/></animateMotion></circle>'
+              html += '<path id="pv-line-2-#uid#" d="M 239 128 L 239 58" fill="none" stroke="var(--solar_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
+              html += '<circle id="pv-dot-2-#uid#" cx="0" cy="0" r="3" fill="transparent">'
+              html += '<animateMotion id="pv-anim-2-#uid#" dur="' + config#uid#.solar.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
+              html += '<mpath xlink:href="#pv-line-2-#uid#"/></animateMotion></circle>'
             }
-            html += '<path id="so-line#uid#" d="M 239 196 L 239 158" fill="none" stroke="var(--solar_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
-            html += '<circle id="so-dot#uid#" cx="0" cy="0" r="3" fill="transparent">'
-            html += '<animateMotion id="anim_pv#uid#" dur="' + config#uid#.solar.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
-            html += '<mpath xlink:href="#so-line#uid#"/></animateMotion></circle>'
+            html += '<path id="pv-line-1-#uid#" d="M 239 196 L 239 158" fill="none" stroke="var(--solar_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
+            html += '<circle id="pv-dot-1-#uid#" cx="0" cy="0" r="3" fill="transparent">'
+            html += '<animateMotion id="pv-anim-1-#uid#" dur="' + config#uid#.solar.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
+            html += '<mpath xlink:href="#pv-line-1-#uid#"/></animateMotion></circle>'
             ///  SOLAR ICON  \\\
-            html += '<svg xmlns="http://www.w3.org/2000/svg" id="icon_sun#uid#" x="'
+            html += '<svg id="pv-icon-#uid#" xmlns="http://www.w3.org/2000/svg" x="'
             html += config#uid#.solar.daily.show === false ? '220' : (config#uid#.solar.mppts > 6 ? '205' : '180')
             html += '" y="'
             html += (config#uid#.solar.mppts == 0 || config#uid#.solar.mppts == 1) ? '70' : (config#uid#.solar.mppts > 6 ? '-13' : '10')
@@ -1832,7 +1884,7 @@
             html += '<path fill="var(--solar_colour#uid#)" d="M11.45 2v3.55L15 3.77L11.45 2m-1 6L8 10.46l3.75 1.25L10.45 8M2 11.45L3.77 15l1.78-3.55H2M10 2H2v8c.57.17 1.17.25 1.77.25c3.58.01 6.49-2.9 6.5-6.5c-.01-.59-.1-1.18-.27-1.75m7 20v-6h-3l5-9v6h3l-5 9Z"/></svg>'
             ///  SOLAR DAILY  ///
             if (config#uid#.solar.daily.show) {
-              html += '<text id="daily_solar_value#uid#" fill="var(--solar_colour#uid#)" x="226" y="'
+              html += '<text id="pv-daily-#uid#" fill="var(--solar_colour#uid#)" x="226" y="'
               html += (config#uid#.solar.mppts == 0 || config#uid#.solar.mppts == 1) ? '85' : (config#uid#.solar.mppts > 6 ? '-60' : '26')
               html += '" class="ft16-#uid# left-align#uid# ' + ((config#uid#.solar.daily.isHistorized == 1) ? 'history cursor' : '') + '"'
               html += (config#uid#.solar.daily.isHistorized == 1) ? ' data-cmd_id=' + config#uid#.solar.daily.id : ''
@@ -1847,7 +1899,7 @@
               }
                 html += '</text>'
               
-              html += '<text id="daily_solar#uid#" fill="var(--solar_colour#uid#)" class="ft9-#uid# left-align#uid#" x="226" y="'
+              html += '<text fill="var(--solar_colour#uid#)" class="ft9-#uid# left-align#uid#" x="226" y="'
               html += (config#uid#.solar.mppts == 0 || config#uid#.solar.mppts == 1) ? '100' : (config#uid#.solar.mppts > 6 ? '-46' : '40')
               html += '">' + config#uid#.solar.daily.text + '</text>'
             }
@@ -1945,21 +1997,23 @@
             ////////////////////////////////////
             html += '<!-- PV ' + solar + ' -->'
             html += '<rect id="pv' + solar + '-rect-#uid#" x="' + x_rect + '" y="' + y_rect + '" width="70" height="30" rx="4.5" ry="4.5" fill="none" stroke="'
-            html += (config#uid#.solars[solar].max_power && config#uid#.solars[solar].power >= config#uid#.solars[solar].max_power) ? 'var(--color_alerte#uid#)' : 'var(--solar_colour#uid#)'
+            html += (config#uid#.solars[solar].max_alert && config#uid#.solars[solar].power >= config#uid#.solars[solar].max_alert) ? 'var(--color_alerte#uid#)' : (config#uid#.solars[solar].power == 0) ? 'var(--solar_colour-0-#uid#)' : 'var(--solar_colour#uid#)'
             html += '" class="'
-            html += (config#uid#.blink && config#uid#.solars[solar].max_power && config#uid#.solars[solar].power >= config#uid#.solars[solar].max_power) ? 'blink#uid#' : ''
+            html += (config#uid#.blink && config#uid#.solars[solar].max_alert && config#uid#.solars[solar].power >= config#uid#.solars[solar].max_alert) ? 'blink#uid#' : ''
             html += '"/>'
             if (config#uid#.solars[solar].max_power && config#uid#.activateGauge) {
               let gaugePourcent = config#uid#.solars[solar].power * 100 / config#uid#.solars[solar].max_power
               let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
               html += '<rect id="pv' + solar + '-rect-gauge-#uid#" class="op-#uid# '
-              html += (config#uid#.blink && config#uid#.solars[solar].max_power && config#uid#.solars[solar].power >= config#uid#.solars[solar].max_power) ? 'blink#uid#' : ''
+              html += (config#uid#.blink && config#uid#.solars[solar].max_alert && config#uid#.solars[solar].power >= config#uid#.solars[solar].max_alert) ? 'blink#uid#' : ''
               html += '" x="' + x_rect + '" y="' + y_rect + '" width="' + width_rect_gauge + '" height="30" rx="4.5" ry="4.5" fill="var(--solar_colour#uid#)" stroke="none" />'
             }
             ///////////////
             ///  POWER  ///
             ///////////////
-            html += '<text id="pv' + solar + '_power#uid#" fill="var(--solar_colour#uid#)" x="' + x_power + '" y="' + y_power + '" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
+            html += '<text id="pv' + solar + '-power-#uid#" fill="'
+            html += (config#uid#.solars[solar].max_alert && config#uid#.solars[solar].power >= config#uid#.solars[solar].max_alert && config#uid#.font_alert) ? 'var(--color_alerte#uid#)' : (config#uid#.solars[solar].power == 0) ? 'var(--solar_colour-0-#uid#)' : 'var(--solar_colour#uid#)'
+            html += '" x="' + x_power + '" y="' + y_power + '" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
             html += (isset(config#uid#.solars[solar]) && isset(config#uid#.solars[solar].power_isHistorized) && config#uid#.solars[solar].power_isHistorized == 1) ? 'history cursor' : ''
             html += '"'
             html += (isset(config#uid#.solars[solar]) && isset(config#uid#.solars[solar].power_id)) ? ' data-cmd_id=' + config#uid#.solars[solar].power_id : ''
@@ -1975,14 +2029,18 @@
             html += '</text>'
             ///  PV LINE  \\\
             if (config#uid#.solar.mppts > 1) {
-              html += '<path id="pv' + solar + '-line#uid#" d="' + path_solar + '" fill="none" stroke="var(--solar_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke" />'
-              html += '<circle id="pv' + solar + '-dot#uid#" cx="0" cy="0" r="3" fill="' + ((config#uid#.solars[solar].power == 0) ? 'transparent' : 'var(--solar_colour#uid#)') + '">'
-              html += '<animateMotion id="anim_pv' + solar + '#uid#" dur="' + config#uid#.solar.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
-              html += '<mpath xlink:href="#pv' + solar + '-line#uid#"/></animateMotion></circle>'
+              html += '<path id="pv' + solar + '-line-#uid#" d="' + path_solar + '" fill="none" stroke="'
+              html += (config#uid#.solars[solar].power == 0) ? 'var(--solar_colour-0-#uid#)' : 'var(--solar_colour#uid#)'
+              html += '" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke" />'
+              html += '<circle id="pv' + solar + '-dot-#uid#" cx="0" cy="0" r="3" fill="' + ((config#uid#.solars[solar].power == 0) ? 'transparent' : 'var(--solar_colour#uid#)') + '">'
+              html += '<animateMotion id="pv' + solar + '-anim-#uid#" dur="3s" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'//' + config#uid#.solar.animation_speed + '
+              html += '<mpath xlink:href="#pv' + solar + '-line-#uid#"/></animateMotion></circle>'
             }
-            ///  PV ENERGY  \\\
+            ///  PV DAILY  \\\
             if (config#uid#.solars[solar].energy !== false) {
-              html += '<text id="pv' + solar + '_energy#uid#" x="' + x_energy + '" y="' + y_energy + '" class="ft8-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.solars[solar].energy_isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--solar_colour#uid#)"'
+              html += '<text id="pv' + solar + '-daily-#uid#" fill="'
+              html += (config#uid#.solars[solar].power == 0) ? 'var(--solar_colour-0-#uid#)' : 'var(--solar_colour#uid#)'
+              html += '" x="' + x_energy + '" y="' + y_energy + '" class="ft8-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.solars[solar].energy_isHistorized == 1) ? 'history cursor' : '') + '"'
               html += ((config#uid#.solars[solar].energy_isHistorized == 1 && config#uid#.solars[solar].energy_id) ? ' data-cmd_id=' + config#uid#.solars[solar].energy_id : '')
               html += '>'
               if (config#uid#.autoConversionUnit) {
@@ -1997,19 +2055,25 @@
             }
             ///  PV VOLTAGE  \\\
             if (config#uid#.solars[solar].voltage !== false) {
-              html += '<text id="pv' + solar + '_voltage#uid#" x="' + x_voltage + '" y="'+ y_voltage + '" class="ft9-#uid# right-align#uid# ' + ((config#uid#.solars[solar].voltage_isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--solar_colour#uid#)" '
+              html += '<text id="pv' + solar + '-voltage-#uid#" fill="'
+              html += (config#uid#.solars[solar].power == 0) ? 'var(--solar_colour-0-#uid#)' : 'var(--solar_colour#uid#)'
+              html += '" x="' + x_voltage + '" y="'+ y_voltage + '" class="ft9-#uid# right-align#uid# ' + ((config#uid#.solars[solar].voltage_isHistorized == 1) ? 'history cursor' : '') + '"'
               html += ((config#uid#.solars[solar].voltage_isHistorized == 1 && config#uid#.solars[solar].voltage_id) ? ' data-cmd_id=' + config#uid#.solars[solar].voltage_id : '')
               html += '>' + trunc#uid#(config#uid#.solars[solar].voltage, config#uid#.powerTrunc) + ' ' + config#uid#.solars[solar].voltage_unit + '</text>'
             }
             ///  PV CURRENT  \\\
             if (config#uid#.solars[solar].current !== false) {
-              html += '<text id="pv' + solar + '_current#uid#" x="' + x_current + '" y="' + y_current + '" class="ft9-#uid# right-align#uid# ' + ((config#uid#.solars[solar].current_isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--solar_colour#uid#)" '
+              html += '<text id="pv' + solar + '-current-#uid#" fill="'
+              html += (config#uid#.solars[solar].power == 0) ? 'var(--solar_colour-0-#uid#)' : 'var(--solar_colour#uid#)'
+              html += '" x="' + x_current + '" y="' + y_current + '" class="ft9-#uid# right-align#uid# ' + ((config#uid#.solars[solar].current_isHistorized == 1) ? 'history cursor' : '') + '"'
               html += ((config#uid#.solars[solar].current_isHistorized == 1 && config#uid#.solars[solar].current_id) ? ' data-cmd_id=' + config#uid#.solars[solar].current_id : '')
               html += '>' + trunc#uid#(config#uid#.solars[solar].current, config#uid#.powerTrunc) + ' ' + config#uid#.solars[solar].current_unit + '</text>'
             }
             ///  PV NAME  \\\
             if (config#uid#.solars[solar].name !== false) {
-              html += '<text id="pv' + solar + '-name-#uid#" x="' + x_name + '" y="' + y_name + '" class="ft9-#uid# ftw-#uid# center-align#uid#" display="' + ((config#uid#.has_solar === false) ? 'none' : '') + '" fill="var(--solar_colour#uid#)">' + config#uid#.solars[solar].name + '</text>'
+              html += '<text id="pv' + solar + '-name-#uid#" fill="'
+              html += (config#uid#.solars[solar].power == 0) ? 'var(--solar_colour-0-#uid#)' : 'var(--solar_colour#uid#)'
+              html += '" x="' + x_name + '" y="' + y_name + '" class="ft9-#uid# ftw-#uid# center-align#uid#" display="' + ((config#uid#.has_solar === false) ? 'none' : '') + '">' + config#uid#.solars[solar].name + '</text>'
             }
           }
           ///////////////////////////////////////////////////////
@@ -2051,16 +2115,16 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             ///  LINE   ///
             ///////////////
-            html += '<path id="es-line#uid#" d="M 304 228 L 264.7 228" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10"/>'
-            html += '<circle id="es-dot1#uid#" cx="0" cy="0" r="3" fill="transparent">'
-            html += '<animateMotion id="anim_load1#uid#" dur="' + config#uid#.load.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
-            html += '<mpath xlink:href="#es-line#uid#"/></animateMotion></circle>'
-            html += '<path id="es-line1#uid#" d="M 374 228 L 402.38 228" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10"/>'
-            html += '<circle id="es-dot#uid#" cx="0" cy="0" r="3" fill="transparent"><animateMotion id="anim_load#uid#" dur="' + config#uid#.load.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#es-line1#uid#"/></animateMotion></circle>'
+            html += '<path id="load-line1-#uid#" d="M 304 228 L 264.7 228" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10"/>'
+            html += '<circle id="load-dot1-#uid#" cx="0" cy="0" r="3" fill="transparent">'
+            html += '<animateMotion id="load-anim1-#uid#" dur="' + config#uid#.load.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
+            html += '<mpath xlink:href="#load-line1-#uid#"/></animateMotion></circle>'
+            html += '<path id="load-line2-#uid#" d="M 374 228 L 402.38 228" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10"/>'
+            html += '<circle id="load-dot2-#uid#" cx="0" cy="0" r="3" fill="transparent"><animateMotion id="load-anim2-#uid#" dur="' + config#uid#.load.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#load-line2-#uid#"/></animateMotion></circle>'
             ///////////////
             ///  ICON   ///
             ///////////////
-            html += '<svg fill="var(--load_colour#uid#)" id="icon_load#uid#" x="400" y="185" width="80" height="80" style="color:var(--load_colour#uid#)"><use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-load"></use></svg>'
+            html += '<svg id="load-icon-#uid#" fill="var(--load_colour#uid#)" x="400" y="185" width="80" height="80" style="color:var(--load_colour#uid#)"><use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-load"></use></svg>'
             /////////////////////
             ///  GAUGE RATIO  ///
             /////////////////////
@@ -2074,7 +2138,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             ///  POWER  ///
             ///////////////
-            html += '<text id="load_power#uid#" x="338.1" y="232.2" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.load.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--load_colour#uid#)"'
+            html += '<text id="load-power-#uid#" x="338.1" y="232.2" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.load.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--load_colour#uid#)"'
             html += ((config#uid#.load.isHistorized == 1) ? ' data-cmd_id=' + config#uid#.load.id : '')
             html += '>'
             if (config#uid#.autoConversionUnit) {
@@ -2090,7 +2154,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///  DAILY  ///
             ///////////////
             if (config#uid#.load.daily.show) {
-              html += '<text id="daily_load_value#uid#" x="304" y="178" class="ft16-#uid# left-align#uid# ' + ((config#uid#.load.daily.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--load_colour#uid#)"'
+              html += '<text id="load-daily-#uid#" x="304" y="178" class="ft16-#uid# left-align#uid# ' + ((config#uid#.load.daily.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--load_colour#uid#)"'
               html += ((config#uid#.load.daily.isHistorized == 1) ? ' data-cmd_id=' + config#uid#.load.daily.id : '')
               html += '>'
               if (config#uid#.autoConversionUnit) {
@@ -2102,7 +2166,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                 html += formatMillier(dailyAbs, config#uid#.formatMillier) + ' ' + config#uid#.load.daily.unit
               }
               html += '</text>'
-              html += '<text id="daily_load#uid#" x="304" y="192.2" class="ft9-#uid# left-align#uid#" fill="var(--load_colour#uid#)" >' + config#uid#.load.daily.text + '</text>'
+              html += '<text x="304" y="192.2" class="ft9-#uid# left-align#uid#" fill="var(--load_colour#uid#)" >' + config#uid#.load.daily.text + '</text>'
             }
 
             ///////////////////////////////////////////////////////
@@ -2243,7 +2307,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ///////////////
               ///  POWER  ///
               ///////////////
-              html += '<text id="ess_load' + num_load + '#uid#" x="' + x_power + '" y="' + y_power + '" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid#' + (isset(config#uid#.loads[num_load].power_isHistorized) && config#uid#.loads[num_load].power_isHistorized == 1 ? ' history cursor' : '')
+              html += '<text id="load' + num_load + '-power-#uid#" x="' + x_power + '" y="' + y_power + '" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid#' + (isset(config#uid#.loads[num_load].power_isHistorized) && config#uid#.loads[num_load].power_isHistorized == 1 ? ' history cursor' : '')
               html += ((config#uid#.font_alert && config#uid#.blink && config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? ' blink#uid#' : '')
               html += '" fill="'
               html += ((config#uid#.font_alert && config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? 'var(--color_alerte#uid#)' : 'var(--load_colour#uid#)')
@@ -2262,17 +2326,17 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ///////////////
               ///  LINE   ///
               ///////////////
-              html += '<path id="es-load' + num_load + 'path#uid#" d="' + path + '" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10" />'
-              html += '<circle id="es-dot' + num_load + '-#uid#" cx="0" cy="0" r="3"  class="' + ((config#uid#.load.animate_load_enable === true) ? '' : 'hidden-#uid#') + '" '
+              html += '<path id="load' + num_load + '-line-#uid#" d="' + path + '" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10" />'
+              html += '<circle id="load' + num_load + '-dot-#uid#" cx="0" cy="0" r="3"  class="' + ((config#uid#.load.animate_load_enable === true) ? '' : 'hidden-#uid#') + '" '
               html += 'fill="' + ((config#uid#.loads[load].power == 0) ? 'transparent' : 'var(--load_colour#uid#)') + '">'
               html += '<animateMotion id="anim_load' + num_load + '-#uid#" dur="3" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
-              html += '<mpath xlink:href="#es-load' + num_load + 'path#uid#"></mpath></animateMotion></circle>'
+              html += '<mpath xlink:href="#load' + num_load + '-line-#uid#"></mpath></animateMotion></circle>'
               ///////////////
               ///  ENERGY ///
               ///////////////
               if (config#uid#.loads[num_load].energy !== false) {
                 
-                html += '<text id="load' + num_load + '_energy#uid#" x="' + x_energy + '" y="' + y_energy + '" class="ft8-#uid# center-align#uid# sh-#uid# ' + (config#uid#.loads[num_load].energy_isHistorized == 1 ? 'history cursor' : '')
+                html += '<text id="load' + num_load + '-daily-#uid#" x="' + x_energy + '" y="' + y_energy + '" class="ft8-#uid# center-align#uid# sh-#uid# ' + (config#uid#.loads[num_load].energy_isHistorized == 1 ? 'history cursor' : '')
                 html += '" fill="var(--load_colour#uid#)"'
                 html += ((config#uid#.loads[num_load].energy_id) ? ' data-cmd_id=' + config#uid#.loads[num_load].energy_id : '')
                 html += '>'
@@ -2290,7 +2354,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ///  NAME   ///
               ///////////////
               if (config#uid#.loads[num_load].name !== false) {
-                html += '<text id="es-load' + num_load + '-name#uid#" x="' + x_name + '" y="' + y_name + '" class="ft9-#uid# center-align#uid#" fill="var(--load_colour#uid#)" >' + config#uid#.loads[num_load].name + '</text>'
+                html += '<text id="load' + num_load + '-name-#uid#" x="' + x_name + '" y="' + y_name + '" class="ft9-#uid# center-align#uid#" fill="var(--load_colour#uid#)" >' + config#uid#.loads[num_load].name + '</text>'
               }
               ///////////////
               ///  PERSO  ///
@@ -2325,9 +2389,10 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             if (config#uid#.load.additional_loads >= 1 && (config#uid#.solar.mppts <= 6 && config#uid#.load.force4load)) {
               let path = 'M 480 228 L ' + max_width_load + ' 228'
-              html += '<path id="loads-path#uid#" d="' + path + '" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10"/>'
-              html += '<circle id="loads-dot-#uid#" cx="0" cy="0" r="3"  class="' + ((config#uid#.load.animate_load_enable === true) ? '' : 'hidden-#uid#') + '" fill="transparent"><animateMotion id="anim_loads-#uid#" dur="3" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#loads-path#uid#"></mpath></animateMotion></circle>'
+              html += '<path id="load-line3-#uid#" d="' + path + '" fill="none" stroke="var(--load_colour#uid#)" stroke-width="1" stroke-miterlimit="10"/>'
+              html += '<circle id="load-dot3-#uid#" cx="0" cy="0" r="3"  class="' + ((config#uid#.load.animate_load_enable === true) ? '' : 'hidden-#uid#') + '" fill="transparent"><animateMotion id="load-anim3-#uid#" dur="3" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#load-line3-#uid#"></mpath></animateMotion></circle>'
             }
+
           }
           ///////////////////////////////////////////////////////
           /////////////////////  Grid ///////////////////////////
@@ -2341,7 +2406,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ///////////////
               ///  POWER  ///
               ///////////////
-              html += '<text id="grid_power#uid#" x="138.1" y="232.2" fill="var(--grid_colour#uid#)" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
+              html += '<text id="grid-power-#uid#" x="138.1" y="232.2" fill="var(--grid_colour#uid#)" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
               html += (config#uid#.grid.isHistorized == 1) ? 'history cursor' : ''
               html += '" data-cmd_id=' + config#uid#.grid.id + '>'
               if (config#uid#.autoConversionUnit) {
@@ -2357,28 +2422,31 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             ///  LINE   ///
             ///////////////
-            html += '<path id="grid-line#uid#" d="M 173 228 L 214 228" fill="none" stroke="var(--grid_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
-            html += '<circle id="grid-dot-buy#uid#" cx="0" cy="0" r="3" fill="transparent">'
-            html += '<animateMotion id="anim_grid_buy#uid#" dur="' + config#uid#.grid.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
-            html += '<mpath xlink:href="#grid-line#uid#"/></animateMotion></circle>'
-            html += '<circle id="grid-dot-sell#uid#" cx="0" cy="0" r="3" fill="transparent">'
-            html += '<animateMotion id="anim_grid_sell#uid#" dur="' + config#uid#.grid.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
-            html += '<mpath xlink:href="#grid-line#uid#"/></animateMotion></circle>'
+            
             // LINE GRID TO RECT POWER
             if (config#uid#.grid.has_grid_power) {
-              html += '<path id="grid-line1#uid#" d="M 103 228 L 64.5 228" fill="none" stroke="var(--grid_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
-              html += '<circle id="grid-dot1-buy#uid#" cx="0" cy="0" r="3" fill="transparent">'
+              html += '<path id="grid-line-1-#uid#" d="M 103 228 L 64.5 228" fill="none" stroke="var(--grid_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
+              html += '<circle id="grid-dot-buy-1-#uid#" cx="0" cy="0" r="3" fill="transparent">'
               html += '<animateMotion id="anim_grid_buy1#uid#" dur="' + config#uid#.grid.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
-              html += '<mpath xlink:href="#grid-line1#uid#"/></animateMotion></circle>'
-              html += '<circle id="grid-dot1-sell#uid#" cx="0" cy="0" r="3" fill="transparent">'
+              html += '<mpath xlink:href="#grid-line-1-#uid#"/></animateMotion></circle>'
+              html += '<circle id="grid-dot-sell-1-#uid#" cx="0" cy="0" r="3" fill="transparent">'
               html += '<animateMotion id="anim_grid_sell1#uid#" dur="' + config#uid#.grid.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
-              html += '<mpath xlink:href="#grid-line1#uid#"/></animateMotion></circle>'
+              html += '<mpath xlink:href="#grid-line-1-#uid#"/></animateMotion></circle>'
             }
+            // LINE RECT POWER TO INVERTER
+            html += '<path id="grid-line-2-#uid#" d="M 173 228 L 214 228" fill="none" stroke="var(--grid_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
+            html += '<circle id="grid-dot-buy-2-#uid#" cx="0" cy="0" r="3" fill="transparent">'
+            html += '<animateMotion id="anim_grid_buy#uid#" dur="' + config#uid#.grid.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
+            html += '<mpath xlink:href="#grid-line-2-#uid#"/></animateMotion></circle>'
+            html += '<circle id="grid-dot-sell-2-#uid#" cx="0" cy="0" r="3" fill="transparent">'
+            html += '<animateMotion id="anim_grid_sell#uid#" dur="' + config#uid#.grid.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
+            html += '<mpath xlink:href="#grid-line-2-#uid#"/></animateMotion></circle>'
+            
             ///////////////
             ///  ICON   ///
             ///////////////
             // OFF
-            html += '<svg id="transmission_off#uid#" x="'
+            html += '<svg id="grid-transmission-off-#uid#" x="'
             html += (config#uid#.grid.has_grid_power) ? 0 : 110
             html += '" y="197.5" width="62" height="62" style="color:var(--no_grid_colour#uid#)" class="'
             html += (config#uid#.grid.status === 1) ? 'hidden-#uid# ' : ''
@@ -2387,7 +2455,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             html += '<use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-transmission-off"/>'
             html += '</svg>'
             // ON
-            html += '<svg id="transmission_on#uid#" x="'
+            html += '<svg id="grid-transmission-on-#uid#" x="'
             html += (config#uid#.grid.has_grid_power) ? 0 : 110
             html += '" y="197.5" width="62" height="62" style="color:var(--grid_colour#uid#)" class="'
             html += (config#uid#.grid.status === 0) ? 'hidden-#uid#' : ''
@@ -2398,10 +2466,8 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///  DAILY  ///
             ///////////////
             if (config#uid#.grid.daily.show_buy) {
-              html += '<text id="daily_grid_buy#uid#" x="'
-              html += (config#uid#.grid.has_grid_power) ? 5 : 115
-              html += '" y="292.1" class="ft9-#uid# left-align#uid#" fill="' + ((config#uid#.grid.daily.show_buy !== true) ? 'transparent' : 'var(--grid-buy-colour#uid#)') + '" >' + config#uid#.grid.daily.text_buy + '</text>'
-              html += '<text id="daily_grid_buy_value#uid#" x="'
+              ///  BUY VALUE  \\\
+              html += '<text id="grid-daily-buy-#uid#" x="'
               html += (config#uid#.grid.has_grid_power) ? 5 : 115
               html += '" y="277.9" fill="var(--grid-buy-colour#uid#)" class="ft16-#uid# left-align#uid# '
               html += (config#uid#.grid.daily.buy_isHistorized == 1) ? 'history cursor' : ''
@@ -2415,12 +2481,14 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                 html += formatMillier(dailyGridBuyAbs, config#uid#.formatMillier) + ' ' + config#uid#.grid.daily.buy_unit
               }
               html += '</text>'
+              ///  BUY LABEL  \\\
+              html += '<text x="'
+              html += (config#uid#.grid.has_grid_power) ? 5 : 115
+              html += '" y="292.1" class="ft9-#uid# left-align#uid#" fill="' + ((config#uid#.grid.daily.show_buy !== true) ? 'transparent' : 'var(--grid-buy-colour#uid#)') + '" >' + config#uid#.grid.daily.text_buy + '</text>'
             }
             if (config#uid#.grid.daily.show_sell) {
-              html += '<text id="daily_grid_sell#uid#" x="'
-              html += (config#uid#.grid.has_grid_power) ? 5 : 115
-              html += '" y="189" class="ft9-#uid# left-align#uid#" fill="' + ((config#uid#.grid.daily.show_sell !== true) ? 'transparent' : 'var(--grid-sell-colour#uid#)') + '" >' + config#uid#.grid.daily.text_sell + '</text>'
-              html += '<text id="daily_grid_sell_value#uid#" x="'
+              ///  SELL VALUE  \\\
+              html += '<text id="grid-daily-sell-#uid#" x="'
               html += (config#uid#.grid.has_grid_power) ? 5 : 115
               html += '" y="175" fill="var(--grid-sell-colour#uid#)" class="ft16-#uid# left-align#uid# '
               html += (config#uid#.grid.daily.sell_isHistorized == 1) ? 'history cursor' : ''
@@ -2434,14 +2502,18 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                 html += formatMillier(dailyGridSellAbs, config#uid#.formatMillier) + ' ' + config#uid#.grid.daily.sell_unit
               }
               html += '</text>'
+              ///  SELL LABEL  \\\
+              html += '<text x="'
+              html += (config#uid#.grid.has_grid_power) ? 5 : 115
+              html += '" y="189" class="ft9-#uid# left-align#uid#" fill="' + ((config#uid#.grid.daily.show_sell !== true) ? 'transparent' : 'var(--grid-sell-colour#uid#)') + '" >' + config#uid#.grid.daily.text_sell + '</text>'
             }
             ///////////////
             ///  TEMPO  ///
             ///////////////
-            html += '<text id="tempo_today_text#uid#" x="78" y="221" class="ft12-#uid# left-align#uid#" fill="transparent" display=""></text>'
-            html += '<circle id="tempo_today_circle#uid#" cx="66" cy="217" r="6" fill="transparent"></circle>'
-            html += '<text  id="tempo_tomorrow_text#uid#" x="75" y="241" class="ft7-#uid# left-align#uid#" fill="transparent" display="">Demain</text>'
-            html += '<circle id="tempo_tomorrow_circle#uid#" cx="66" cy="238" r="6" fill="transparent"></circle>'          
+            html += '<text id="grid-tempo-today-text-#uid#" x="78" y="221" class="ft12-#uid# left-align#uid#" fill="transparent" display=""></text>'
+            html += '<circle id="grid-tempo-today-circle-#uid#" cx="66" cy="217" r="6" fill="transparent"></circle>'
+            html += '<text  id="grid-tempo-tomorrow-text-#uid#" x="75" y="241" class="ft7-#uid# left-align#uid#" fill="transparent" display="">Demain</text>'
+            html += '<circle id="grid-tempo-tomorrow-circle-#uid#" cx="66" cy="238" r="6" fill="transparent"></circle>'          
           }
           ///////////////////////////////////////////////////////
           ////////////////////// Battery ////////////////////////
@@ -2460,7 +2532,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ///////////////
               ///  POWER  ///
               ///////////////
-              html += '<text id="battery_power#uid#" fill="var(--battery_colour#uid#)" x="'
+              html += '<text id="battery-power-#uid#" fill="var(--battery_colour#uid#)" x="'
               html += (config#uid#.has_aux) ? '140' : '239'
               html += '" y="320" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# '
               html += (config#uid#.battery.power.isHistorized == 1) ? 'history cursor' : ''
@@ -2479,7 +2551,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             /// CURRENT ///
             ///////////////
             if (config#uid#.battery.current.show) {
-              html += '<text id="battery_current#uid#" fill="var(--battery_colour#uid#)" x="'
+              html += '<text id="battery-current-#uid#" fill="var(--battery_colour#uid#)" x="'
               html += (config#uid#.has_aux) ? '133' : '232'
               //html += '" y="295" class="ft9-#uid# right-align#uid# ' //test2
               // test2
@@ -2496,7 +2568,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             /// VOLTAGE ///
             ///////////////
             if (config#uid#.battery.voltage.show) {
-              html += '<text id="battery_voltage#uid#" fill="var(--battery_colour#uid#)" x="'
+              html += '<text id="battery-voltage-#uid#" fill="var(--battery_colour#uid#)" x="'
               html += (config#uid#.has_aux) ? '133' : '232'
               html += '" y="'
               //html += (config#uid#.battery.current.show) ? '285' : '295' // test2
@@ -2513,7 +2585,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///   TEMP  ///
             ///////////////
             if (config#uid#.battery.temp.show) {
-              html += '<text id="battery_temp#uid#" fill="var(--battery_colour#uid#)" x="'
+              html += '<text id="battery-temp-#uid#" fill="var(--battery_colour#uid#)" x="'
               html += (config#uid#.has_aux) ? '146' : '245'
               html += '" y="'
               //html += '295'
@@ -2530,7 +2602,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///  DAILY  ///
             ///////////////
             if (config#uid#.battery.daily.show_charge) {
-              html += '<text id="daily_battery_charge_value#uid#" fill="var(--battery-charge#uid#)" x="'
+              html += '<text id="battery-daily-charge-#uid#" fill="var(--battery-charge#uid#)" x="'
               html += (config#uid#.has_aux) ? '25' : '131'
               html += '" y="343" class= "ft16-#uid# left-align#uid# '
               html += (config#uid#.battery.daily.charge_isHistorized == 1) ? 'history cursor' : ''
@@ -2544,13 +2616,13 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                 html += formatMillier(dailyBatteryChargeAbs, config#uid#.formatMillier) + ' ' + config#uid#.battery.daily.charge_unit
               }
               html +=  '</text>'
-              html += '<text id="daily_bat_charge#uid#" fill="var(--battery-charge#uid#)" x="'
+              html += '<text fill="var(--battery-charge#uid#)" x="'
               html += (config#uid#.has_aux) ? '25' : '131'
               html += '" y="357.2" class="ft9-#uid# left-align#uid#">'
               html += config#uid#.battery.daily.text_charge + '</text>'
             }
             if (config#uid#.battery.daily.show_discharge) {
-              html += '<text id="daily_battery_discharge_value#uid#" fill="var(--battery-discharge#uid#)" x="'
+              html += '<text id="battery-daily-discharge-#uid#" fill="var(--battery-discharge#uid#)" x="'
               html += (config#uid#.has_aux) ? '25' : '131'
               html += '" y="380.1" class="ft16-#uid# left-align#uid# '
               html += (config#uid#.battery.daily.discharge_isHistorized == 1) ? 'history cursor' : ''
@@ -2564,7 +2636,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                 html += formatMillier(dailyBatteryDischargeAbs, config#uid#.formatMillier) + ' ' + config#uid#.battery.daily.discharge_unit
               }
               html +=  '</text>'
-              html += '<text id="daily_bat_discharge#uid#" fill="var(--battery-discharge#uid#)" x="'
+              html += '<text fill="var(--battery-discharge#uid#)" x="'
               html += (config#uid#.has_aux) ? '25' : '131'
               html += '" y="393.7" class="ft9-#uid# left-align#uid#">'
               html += config#uid#.battery.daily.text_discharge + '</text>'
@@ -2572,17 +2644,17 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             ///   TIME  ///
             ///////////////
-            html += '<text id="duration#uid#" fill="' + ((config#uid#.battery.energy == 0 || !config#uid#.battery.energy) ? 'transparent' : 'var(--battery_colour#uid#)') + '" x="'
+            html += '<text id="battery-duration-#uid#" fill="' + ((config#uid#.battery.capacity == 0) ? 'transparent' : 'var(--battery_colour#uid#)') + '" x="'
             html += (config#uid#.has_aux) ? '171' : '270'
             html += '" y="377.5" class="ft12-#uid# left-align#uid#"></text>'
-            html += '<text id="duration_text_etat#uid#" fill="' + ((config#uid#.battery.energy == 0 || !config#uid#.battery.energy || config#uid#.battery.power.state === 0) ? 'transparent' : 'var(--battery_colour#uid#)') + '" x="'
+            html += '<text id="battery-duration-text-#uid#" fill="' + ((config#uid#.battery.capacity == 0 || config#uid#.battery.power.state === 0) ? 'transparent' : 'var(--battery_colour#uid#)') + '" x="'
             html += (config#uid#.has_aux) ? '171' : '270'
             html += '" y="393.7" class="ft9-#uid# left-align#uid#"></text>'
             ///////////////
             /// STATE % ///
             ///////////////
             if (config#uid#.battery.state.show) {
-              html += '<text id="battery_soc#uid#" fill="var(--battery-state#uid#)" x="'
+              html += '<text id="battery-soc-#uid#" fill="var(--battery-state#uid#)" x="'
               html += (config#uid#.has_aux) ? '171' : '270'
               html += '" y="360" class="ft18-#uid# ftw-#uid# left-align#uid# '
               html += (config#uid#.battery.state.isHistorized == 1) ? 'history cursor' : ''
@@ -2595,7 +2667,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             let y_icon = 335
             if (config#uid#.battery.icon) {
               if (config#uid#.battery.icon.indexOf(".") !== -1) {
-                html += '<svg xmlns="http://www.w3.org/2000/svg" id="icon_bat#uid#" x="' + x_icon + '" y="' + y_icon + '" width="60" height="60" viewBox="0 0 60 60" opacity="1">'
+                html += '<svg xmlns="http://www.w3.org/2000/svg" id="battery-icon-#uid#" x="' + x_icon + '" y="' + y_icon + '" width="60" height="60" viewBox="0 0 60 60" opacity="1">'
                 html += '<image xlink:href="' + config#uid#.battery.icon + '" x="0" y="0" height="60" width="60"/>'
                 html += '</svg>'
               } else {
@@ -2605,12 +2677,12 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                 html += '</svg>'
               }
             } else {
-              html += '<svg fill="var(--battery_colour#uid#)" id="icon_bat#uid#" x="' + x_icon + '" y="' + y_icon + '" width="60" height="60" style="color:var(--battery-state#uid#)"></svg>'
+              html += '<svg id="battery-icon-#uid#" fill="var(--battery_colour#uid#)" x="' + x_icon + '" y="' + y_icon + '" width="60" height="60" style="color:var(--battery-state#uid#)"></svg>'
             }
             ///////////////
             ///  LINE   ///
             ///////////////
-            html += '<path id="bat-line#uid#" d="'
+            html += '<path id="battery-line-#uid#" d="'
             if (config#uid#.has_aux) { // test2
               //html += 'M 214 250 L 147 250 Q 139 250 139 258 L 139 300'
               html += 'M 214 250 L 147 250 Q 139 250 139 258 L 139 ' + ((config#uid#.battery.power.show) ? 300 : 330)
@@ -2621,29 +2693,29 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             }
             //(config#uid#.has_aux) ? 'M 214 250 L 147 250 Q 139 250 139 258 L 139 300' : 'M 239 260 L 239 300' //test2
             html += '" fill="none" stroke="var(--battery_colour#uid#)" stroke-width="1" stroke-miterlimit="10"  pointer-events="stroke"/>'
-            html += '<circle id="power-dot-charge#uid#" cx="0" cy="0" r="3" fill="transparent">'
-            html += '<animateMotion id="anim_battery-charge#uid#" dur="' + config#uid#.battery.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
-            html += '<mpath xlink:href="#bat-line#uid#"/></animateMotion></circle>'
-            html += '<circle id="power-dot-discharge#uid#" cx="0" cy="0" r="3" fill="transparent">'
-            html += '<animateMotion id="anim_battery-discharge#uid#" dur="' + config#uid#.battery.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
-            html += '<mpath xlink:href="#bat-line#uid#"/></animateMotion></circle>'
+            html += '<circle id="battery-dot-charge-#uid#" cx="0" cy="0" r="3" fill="transparent">'
+            html += '<animateMotion id="battery-anim-charge-#uid#" dur="' + config#uid#.battery.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
+            html += '<mpath xlink:href="#battery-line-#uid#"/></animateMotion></circle>'
+            html += '<circle id="battery-dot-discharge-#uid#" cx="0" cy="0" r="3" fill="transparent">'
+            html += '<animateMotion id="battery-anim-discharge-#uid#" dur="' + config#uid#.battery.animation_speed + 's" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear">'
+            html += '<mpath xlink:href="#battery-line-#uid#"/></animateMotion></circle>'
             ///////////////////////////////////////////////////////
             /////////////////// Battery mppt //////////////////////
             ///////////////////////////////////////////////////////
             if (config#uid#.battery.mppt.has_mppt_power) {
               html += '<!-- battery mppt -->'
-              html += '<rect fill="none" stroke="var(--battery_mppt_colour#uid#)" x="'
+              html += '<rect id="battery-mppt-rect-#uid#" fill="none" stroke="var(--battery_mppt_colour#uid#)" x="'
               html += (config#uid#.has_aux) ? '204' : '303'
               html += '" y="300" width="70" height="30" rx="4.42" ry="4.42"/>'
               ///////////////
               ///  GAUGE  ///
               ///////////////
               if (config#uid#.activateGauge)
-                html += '<rect id="battery_mppt-rect-gauge-#uid#" fill="var(--battery_mppt_colour#uid#)" class="op-#uid#" x="' + ((config#uid#.has_aux) ? '204' : '303') + '" y="300" width="0" height="30" rx="4.5" ry="4.5" stroke="transparent"/>'
+                html += '<rect id="battery-mppt-rect-gauge-#uid#" fill="var(--battery_mppt_colour#uid#)" class="op-#uid#" x="' + ((config#uid#.has_aux) ? '204' : '303') + '" y="300" width="0" height="30" rx="4.5" ry="4.5" stroke="transparent"/>'
               ///////////////
               ///  POWER  ///
               ///////////////
-              html += '<text id="battery_mppt_power-#uid#" fill="var(--battery_mppt_colour#uid#)" x="'
+              html += '<text id="battery-mppt-power-#uid#" fill="var(--battery_mppt_colour#uid#)" x="'
               html += (config#uid#.has_aux) ? '240' : '337'
               html += '" y="'
               html += (config#uid#.battery.mppt.energy.show) ? '314' : '319'
@@ -2660,10 +2732,10 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               }
               html += '</text>'
               ///////////////
-              ///  ENERGY ///
+              ///  DAILY ///
               ///////////////
               if (config#uid#.battery.mppt.energy.show) {
-                html += '<text id="battery_mppt_energy-#uid#" fill="var(--battery_mppt_colour#uid#)" x="'
+                html += '<text id="battery-mppt-daily-#uid#" fill="var(--battery_mppt_colour#uid#)" x="'
                 html += (config#uid#.has_aux) ? '240' : '337'
                 html += '" y="325" class="ft8-#uid# center-align#uid# sh-#uid# '
                 html += (config#uid#.battery.mppt.energy.isHistorized == 1) ? 'history cursor' : ''
@@ -2682,7 +2754,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ///  LINE   ///
               ///////////////
               html += '<path id="battery-mppt-line-#uid#" d="' + ((config#uid#.has_aux) ? 'M 175 315 L 204 315' : 'M 274 315 L 303 315') + '" fill="none" stroke="var(--battery_mppt_colour#uid#)" stroke-width="1" stroke-miterlimit="10"/>'
-              html += '<circle id="dot-battery-mppt-#uid#" cx="0" cy="0" r="3" fill="' + ((parseInt(config#uid#.battery.mppt.power.state) <= 0) ? 'transparent' : 'var(--battery_mppt_colour#uid#)') + '">'
+              html += '<circle id="battery-mppt-dot-#uid#" cx="0" cy="0" r="3" fill="' + ((parseInt(config#uid#.battery.mppt.power.state) <= 0) ? 'transparent' : 'var(--battery_mppt_colour#uid#)') + '">'
               html += '<animateMotion id="battery-mppt-animate-#uid#" dur="5s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath xlink:href="#battery-mppt-line-#uid#"/></animateMotion></circle>'
               ///////////////
               ///  NAME  ///
@@ -2706,7 +2778,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             ///  POWER  ///
             ///////////////
-            html += '<text id="aux_power#uid#" x="' + ((config#uid#.has_battery) ? '339' : '239') + '" y="320" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.aux.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--aux_colour#uid#)" data-cmd_id=' + config#uid#.aux.id + '>'
+            html += '<text id="aux-power-#uid#" x="' + ((config#uid#.has_battery) ? '339' : '239') + '" y="320" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid# ' + ((config#uid#.aux.isHistorized == 1) ? 'history cursor' : '') + '" fill="var(--aux_colour#uid#)" data-cmd_id=' + config#uid#.aux.id + '>'
             if (config#uid#.autoConversionUnit) {
               let power = autoValueArray#uid#(config#uid#.aux.power, config#uid#.aux.power_unit)
               let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -2720,20 +2792,20 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             ///////////////
             ///  LINE   ///
             ///////////////
-            html += '<path id="aux-line#uid#" d="' + ((config#uid#.has_battery) ? 'M 339 300 L 339 258 Q 339 250 331 250 L 264 250' : 'M 239.23 300 L 239.23 260') + '" fill="none" stroke="var(--aux_colour#uid#)" stroke-width="1" stroke-miterlimit="10" pointer-events="stroke"></path>'
+            html += '<path id="aux-line-#uid#" d="' + ((config#uid#.has_battery) ? 'M 339 300 L 339 258 Q 339 250 331 250 L 264 250' : 'M 239.23 300 L 239.23 260') + '" fill="none" stroke="var(--aux_colour#uid#)" stroke-width="1" stroke-miterlimit="10" pointer-events="stroke"></path>'
             html += '<circle id="aux-dot-#uid#" cx="0" cy="0" r="3" fill="' + ((config#uid#.aux.power == 0) ? 'transparent' : 'var(--aux_colour#uid#)') + '">'
-            html += '<animateMotion id="anim_aux#uid#" dur="' + config#uid#.aux.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
-            html += '<mpath xlink:href="#aux-line#uid#"/></animateMotion></circle>'
+            html += '<animateMotion id="aux-anim-#uid#" dur="' + config#uid#.aux.animation_speed + 's" repeatCount="indefinite" keyPoints="0;1" keyTimes="0;1" calcMode="linear">'
+            html += '<mpath xlink:href="#aux-line-#uid#"/></animateMotion></circle>'
             ///////////////
             ///  ICON   ///
             ///////////////
-            html += '<svg fill="var(--aux_colour#uid#)" id="aux_generator#uid#" x="' + ((config#uid#.has_battery) ? '299' : '199') + '" y="325" width="80" height="80" style="color:var(--aux_colour#uid#)"><use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-aux"></use></svg>'
+            html += '<svg id="aux_icon-#uid#" fill="var(--aux_colour#uid#)" x="' + ((config#uid#.has_battery) ? '299' : '199') + '" y="325" width="80" height="80" style="color:var(--aux_colour#uid#)"><use xlink:href="plugins/powerFlow/desktop/images/icon.svg#icon-aux"></use></svg>'
             ///////////////
             ///  DAILY  ///
             ///////////////
             if (config#uid#.aux.daily.show) {
               
-              html += '<text id="daily_aux_value#uid#" x="' + ((config#uid#.has_battery) ? '385' : '131') + '" y="' + ((config#uid#.has_battery) ? '380' : '380.1') + '" class="ft16-#uid# left-align#uid# '
+              html += '<text id="aux-daily-#uid#" x="' + ((config#uid#.has_battery) ? '385' : '131') + '" y="' + ((config#uid#.has_battery) ? '380' : '380.1') + '" class="ft16-#uid# left-align#uid# '
               html += (config#uid#.aux.daily.isHistorized == 1) ? 'history cursor' : ''
               html += '" fill="var(--aux_colour#uid#)" data-cmd_id=' + config#uid#.aux.daily.id + '>'
               if (config#uid#.autoConversionUnit) {
@@ -2745,7 +2817,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                 html += formatMillier(dailyAuxAbs, config#uid#.formatMillier) + ' ' + config#uid#.aux.daily.unit
               }
               html += '</text>'
-              html += '<text id="daily_aux_text#uid#" x="' + ((config#uid#.has_battery) ? '385' : '131') + '" y="' + ((config#uid#.has_battery) ? '393.7' : '393.7') + '" class="ft9-#uid# left-align#uid#" fill="var(--aux_colour#uid#)">' + config#uid#.aux.daily.text + '</text>'
+              html += '<text x="' + ((config#uid#.has_battery) ? '385' : '131') + '" y="' + ((config#uid#.has_battery) ? '393.7' : '393.7') + '" class="ft9-#uid# left-align#uid#" fill="var(--aux_colour#uid#)">' + config#uid#.aux.daily.text + '</text>'
             }
           }
           ///////////////////////////////////////////////////////
@@ -2893,7 +2965,8 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
       if (ElDomExist) {  
         if (el != '') log#uid#('| launched by ' + el)
         log#uid#('| has_pv_power ? ' + config#uid#.solar.has_pv_power)
-        ///  Power  \\\
+        
+        ///  POWER  \\\
         if (config#uid#.solar.has_pv_power === false) {
           var differentUnit = false
           for (solar in config#uid#.solars) {
@@ -2921,7 +2994,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                config#uid#.solar.power = config#uid#.solar.power + (config#uid#.solars[solar].power * 1000)
             }
             config#uid#.solar.power = config#uid#.solar.power / 1000
-            if (is_object(cmdPower = document.getElementById("pvtotal_power#uid#"))) {
+            if (is_object(cmdPower = document.getElementById("pv-power-#uid#"))) {
               if (config#uid#.autoConversionUnit) {
                 let power = autoValueArray#uid#(config#uid#.solar.power, config#uid#.solar.power_unit)
                 let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -2932,15 +3005,9 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               }
             }
           }
-          if ("#pvState0Color#" != '#'+'pvState0Color#' && '#pvState0Color#' != '#solarColor#') {
-            if (config#uid#.solars[solar].power > 0) {
-              
-            }
-            
-          }
         }
         
-        ///  Gauge  \\\
+        ///  GAUGE  \\\
         if (config#uid#.solar.max_power) {
           if (config#uid#.activateGauge) {
             let gaugePourcent = config#uid#.solar.power * 100 / config#uid#.solar.max_power
@@ -2949,79 +3016,78 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
           } else document.getElementById("pv-rect-gauge-#uid#")?.setAttribute('width', 0)
         }
         
-        /// Alert  \\\
-        if (config#uid#.solar.max_power && config#uid#.solar.power >= config#uid#.solar.max_power) {
-          document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
-          if (config#uid#.blink) {
-            document.getElementById("pv-rect-#uid#")?.classList.add("blink#uid#")
-            document.getElementById("pv-rect-gauge-#uid#")?.classList.add("blink#uid#")
+        ///  ALERT  \\\
+        if (config#uid#.solar.has_pv_power === false) {
+          if (config#uid#.solar.alert_power) {
+            if (Math.abs(config#uid#.solar.power) >= Math.abs(config#uid#.solar.alert_power)) {
+              if (config#uid#.blink) {
+                document.getElementById("pv-rect-#uid#")?.classList.add("blink#uid#")
+                document.getElementById("pv-rect-gauge-#uid#")?.classList.add("blink#uid#")
+                //if (config#uid#.font_alert) document.getElementById("pv-power-#uid#")?.classList.add("blink#uid#")
+              }
+              if (config#uid#.font_alert) document.getElementById("pv-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
+              document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+              document.getElementById("pv-line-1-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+              document.getElementById("pv-line-2-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+              document.getElementById("pv-power-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+            } else {
+              if (config#uid#.blink) {
+                document.getElementById("pv-rect-#uid#")?.classList.remove("blink#uid#")
+                document.getElementById("pv-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+                //if (config#uid#.font_alert) document.getElementById("pv-power-#uid#")?.classList.remove("blink#uid#")
+              }
+              if (Math.abs(config#uid#.solar.power) > 0) {
+                document.getElementById("pv-power-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+                document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+                document.getElementById("pv-line-1-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+                document.getElementById("pv-line-2-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+              } else {
+                document.getElementById("pv-power-#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
+                document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
+                document.getElementById("pv-line-1-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
+                document.getElementById("pv-line-2-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
+              }
+            }
           }
         } else {
-          document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
-          if (config#uid#.blink) {
-            document.getElementById("pv-rect-#uid#")?.classList.remove("blink#uid#")
-            document.getElementById("pv-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+          if (config#uid#.solar.alert_power) {
+            if (Math.abs(config#uid#.solar.power) >= Math.abs(config#uid#.solar.alert_power)) {
+              if (config#uid#.blink) {
+                document.getElementById("pv-rect-#uid#")?.classList.add("blink#uid#")
+                document.getElementById("pv-rect-gauge-#uid#")?.classList.add("blink#uid#")
+                //if (config#uid#.font_alert) document.getElementById("pv-power-#uid#")?.classList.add("blink#uid#")
+              }
+              if (config#uid#.font_alert) document.getElementById("pv-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
+              document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+            } else {
+              if (config#uid#.blink) {
+                document.getElementById("pv-rect-#uid#")?.classList.remove("blink#uid#")
+                document.getElementById("pv-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+                //if (config#uid#.font_alert) document.getElementById("pv-power-#uid#")?.classList.remove("blink#uid#")
+              }
+              if (config#uid#.font_alert) document.getElementById("pv-power-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+              document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
+              
+            }
           }
         }
+        
+        ///  DOT  \\\
+        if (Math.abs(config#uid#.solar.power) > 0) {
+          document.getElementById("pv-dot-1-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+          document.getElementById("pv-dot-2-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
+        } else {
+          document.getElementById("pv-dot-1-#uid#")?.setAttribute("fill", "transparent")
+          document.getElementById("pv-dot-2-#uid#")?.setAttribute("fill", "transparent")
+        }
+        
+        ///  SPEED  \\\
         log#uid#('| total_pv = ' + config#uid#.solar.power)
-        let solar_animation_speed = config#uid#.solar.animation_speed
-        log#uid#('| animation_speed = ' + config#uid#.solar.animation_speed)
-        log#uid#('| max power = ' + config#uid#.solar.max_power)
         let speed = config#uid#.solar.animation_speed - ((config#uid#.solar.animation_speed - 1.5) * (config#uid#.solar.power / (config#uid#.solar.max_power || config#uid#.solar.power)))
         speed = (speed >= 1.5) ? speed : 1.5
         log#uid#('| animation_speed = ' + speed)
-        document.getElementById("anim_pv#uid#")?.setAttribute("dur",speed)
-        for (solar in config#uid#.solars) {
-          document.getElementById("anim_pv" + solar + "#uid#")?.setAttribute("dur",speed)
-          log#uid#('| pv' + solar + '_power = ' + parseFloat(config#uid#.solars[solar].power) + ' ' + config#uid#.solars[solar].power_unit)
-          if (config#uid#.solars[solar].power > 0) {
-            document.getElementById("pv" + solar + "-dot#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-          } else {
-            document.getElementById("pv" + solar + "-dot#uid#")?.setAttribute("fill", "transparent")
-          }
-          if ("#pvState0Color#" != '#'+'pvState0Color#' && '#pvState0Color#' != '#solarColor#') {
-            if (config#uid#.solars[solar].power > 0) {
-              log#uid#('| config#uid#.solars[solar].power > 0')
-              
-              document.getElementById("pv" + solar + "-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
-              document.getElementById("pv" + solar + "_power#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-              document.getElementById("pv" + solar + "-line#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
-              if (is_object(document.getElementById("pv" + solar + "-line#uid#"))) document.getElementById("pv" + solar + "-line#uid#").style.opacity = 1
-              document.getElementById("pv" + solar + "_voltage#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-              document.getElementById("pv" + solar + "_current#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-              document.getElementById("pv" + solar + "_energy#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-              document.getElementById("pv" + solar + "-name-#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-            }
-            else {
-              document.getElementById("pv" + solar + "-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
-              document.getElementById("pv" + solar + "_power#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
-              document.getElementById("pv" + solar + "-line#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
-              if (is_object(document.getElementById("pv" + solar + "-line#uid#"))) document.getElementById("pv" + solar + "-line#uid#").style.opacity = 0.2
-              document.getElementById("pv" + solar + "_voltage#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
-              document.getElementById("pv" + solar + "_current#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
-              document.getElementById("pv" + solar + "_energy#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
-              document.getElementById("pv" + solar + "-name-#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
-            }
-          }
-        }
-        if(config#uid#.solar.power > 0) {
-          document.getElementById("so-dot#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-          document.getElementById("so-dot2#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-          if (config#uid#.solar.has_pv_power === false) {
-            document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
-            document.getElementById("so-line#uid#")?.setAttribute("stroke", "var(--solar_colour#uid#)")
-            document.getElementById("pvtotal_power#uid#")?.setAttribute("fill", "var(--solar_colour#uid#)")
-          }
-        }
-        else {
-          document.getElementById("so-dot#uid#")?.setAttribute("fill", "transparent")
-          document.getElementById("so-dot2#uid#")?.setAttribute("fill", "transparent")
-          if (config#uid#.solar.has_pv_power === false) {
-            document.getElementById("pv-rect-#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
-            document.getElementById("so-line#uid#")?.setAttribute("stroke", "var(--solar_colour-0-#uid#)")
-            document.getElementById("pvtotal_power#uid#")?.setAttribute("fill", "var(--solar_colour-0-#uid#)")
-          }
-        }
+        document.getElementById("pv-anim-1-#uid#")?.setAttribute("dur",speed)
+        document.getElementById("pv-anim-2-#uid#")?.setAttribute("dur",speed)
       }
       log#uid#('└──────────────────────────────────────────────────────')
       if (config#uid#.has_load && el != 'init' && config#uid#.activateGaugeRatio) calculateGaugeRatio#uid#('calculatePv')
@@ -3034,7 +3100,8 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
       if (ElDomExist) {  
         if (el != '') log#uid#('| launched by ' + el)
         log#uid#('| has_load_power ? ' + config#uid#.load.has_load_power)
-        /// Power \\\
+        
+        /// POWER CALCUL \\\
         if (config#uid#.load.has_load_power === false) {
           var differentUnit = false
           //config#uid#.load.power_unit = config#uid#.loads[1].power_unit
@@ -3063,7 +3130,7 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
                if (isset(config#uid#.loads[load].power)) config#uid#.load.power = config#uid#.load.power + (config#uid#.loads[load].power * 1000)
             }
             config#uid#.load.power = config#uid#.load.power / 1000
-            if (is_object(cmd = document.getElementById("load_power#uid#"))) {
+            if (is_object(cmd = document.getElementById("load-power-#uid#"))) {
               if (config#uid#.autoConversionUnit) {
                 let power = autoValueArray#uid#(config#uid#.load.power, config#uid#.load.power_unit)
                 let PowerAbs = trunc#uid#(Math.abs(power.value), config#uid#.powerTrunc)
@@ -3075,7 +3142,8 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             }
           }
         }
-        ///  Gauge  \\\
+        
+        ///  GAUGE  \\\
         if (config#uid#.load.max_power) {
           if (config#uid#.activateGauge) {
             let gaugePourcent = config#uid#.load.power * 100 / config#uid#.load.max_power
@@ -3083,39 +3151,41 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             document.getElementById("load-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
           } else document.getElementById("load-rect-gauge-#uid#")?.setAttribute('width', 0)
         }
-        /// Alert  \\\
-        if (config#uid#.load.max_power && config#uid#.load.power >= config#uid#.load.max_power) {
+        
+        /// ALERT  \\\
+        if (config#uid#.load.alert_power && config#uid#.load.power >= config#uid#.load.alert_power) {
           document.getElementById("load-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+          if (config#uid#.font_alert) document.getElementById("load-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
           if (config#uid#.blink) {
             document.getElementById("load-rect-#uid#")?.classList.add("blink#uid#")
             document.getElementById("load-rect-gauge-#uid#")?.classList.add("blink#uid#")
+            //if (config#uid#.font_alert) document.getElementById("load-power-#uid#")?.classList.add("blink#uid#")
           }
         } else {
           document.getElementById("load-rect-#uid#")?.setAttribute("stroke", "var(--load_colour#uid#)")
+          if (config#uid#.font_alert) document.getElementById("load-power-#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
           if (config#uid#.blink) {
             document.getElementById("load-rect-#uid#")?.classList.remove("blink#uid#")
             document.getElementById("load-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+            //if (config#uid#.font_alert) document.getElementById("load-power-#uid#")?.classList.remove("blink#uid#")
           }
         }
         log#uid#('| total_load = ' + config#uid#.load.power)
-        ///  Dot  \\\
+        
+        ///  DOT  \\\
         if(config#uid#.load.power > 0) {
-          //document.getElementById("loads-dot-#uid#").setAttribute("fill", "var(--load_colour#uid#)")
-          document.getElementById("es-dot1#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
-          document.getElementById("es-dot#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
+          document.getElementById("load-dot1-#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
+          document.getElementById("load-dot2-#uid#")?.setAttribute("fill", "var(--load_colour#uid#)")
         } else {
-          //document.getElementById("loads-dot-#uid#").setAttribute("fill", "transparent")
-          document.getElementById("es-dot1#uid#")?.setAttribute("fill", "transparent")
-          document.getElementById("es-dot#uid#")?.setAttribute("fill", "transparent")
+          document.getElementById("load-dot1-#uid#")?.setAttribute("fill", "transparent")
+          document.getElementById("load-dot2-#uid#")?.setAttribute("fill", "transparent")
         }
-        log#uid#('| animation_speed = ' + config#uid#.load.animation_speed)
-        log#uid#('| max_power = ' + config#uid#.load.max_power)
-        /// Speed  \\\
-        let speed = config#uid#.load.animation_speed - ((config#uid#.load.animation_speed - 1) * (config#uid#.load.power / (config#uid#.load.max_power || config#uid#.load.power)))
-        speed = (speed >= 1) ? speed : 1
+
+        /// SPEED  \\\
+        let speed = Math.max((5 - (4 * (config#uid#.load.power / (config#uid#.load.max_power || config#uid#.load.power)))), 1)
         log#uid#('| animation_speed = ' + speed)
-        document.getElementById("anim_load#uid#")?.setAttribute("dur",speed)
-        document.getElementById("anim_load1#uid#")?.setAttribute("dur",speed)
+        document.getElementById("load-anim1-#uid#")?.setAttribute("dur",speed)
+        document.getElementById("load-anim2-#uid#")?.setAttribute("dur",speed)
       }
       log#uid#('└──────────────────────────────────────────────────────')
       if (config#uid#.has_load && el != 'init' && config#uid#.activateGaugeRatio) calculateGaugeRatio#uid#('calculateLoad')
@@ -3127,13 +3197,8 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
       log#uid#('| ElDomExist ? ' + ElDomExist)
       if (ElDomExist) {
         if (el != '') log#uid#('| launched by ' + el)
-        ///  Speed  \\\
-        let speed = config#uid#.aux.animation_speed - ((config#uid#.aux.animation_speed - 1.5) * ((config#uid#.aux.power) / (config#uid#.aux.max_power || config#uid#.aux.power)))
-        speed = (speed >= 1.5) ? speed : 1.5
-        document.getElementById("anim_aux#uid#")?.setAttribute("dur",speed)
-        log#uid#('| animation_speed = ' + config#uid#.aux.animation_speed)
-        log#uid#('| new animation_speed = ' + speed)
-        ///  Gauge  \\\
+        
+        ///  GAUGE  \\\
         if (config#uid#.aux.max_power) {
           if (config#uid#.activateGauge) {
             let gaugePourcent = config#uid#.aux.power * 100 / config#uid#.aux.max_power
@@ -3141,23 +3206,36 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
             document.getElementById("aux-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
           } else document.getElementById("aux-rect-gauge-#uid#")?.setAttribute('width', 0)
         }
-        /// Colors  \\\
         
-        if (config#uid#.aux.max_power && config#uid#.aux.power >= config#uid#.aux.max_power) {
+        ///  ALERT  \\\
+        if (config#uid#.aux.alert_power && config#uid#.aux.power >= config#uid#.aux.alert_power) {
           document.getElementById("aux-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+          if (config#uid#.font_alert) document.getElementById("aux-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
           if (config#uid#.blink) {
             document.getElementById("aux-rect-#uid#")?.classList.add("blink#uid#")
             document.getElementById("aux-rect-gauge-#uid#")?.classList.add("blink#uid#")
+            //if (config#uid#.font_alert) document.getElementById("aux-power-#uid#")?.classList.add("blink#uid#")
           }
         } else {
           document.getElementById("aux-rect-#uid#")?.setAttribute("stroke", "var(--aux_colour#uid#)")
+          if (config#uid#.font_alert) document.getElementById("aux-power-#uid#")?.setAttribute("fill", "var(--aux_colour#uid#)")
           if (config#uid#.blink) {
             document.getElementById("aux-rect-#uid#")?.classList.remove("blink#uid#")
             document.getElementById("aux-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+            //if (config#uid#.font_alert) document.getElementById("aux-power-#uid#")?.classList.remove("blink#uid#")
           }
         }
+        
+        ///  DOT  \\\
         if (config#uid#.aux.power > 0) document.getElementById("aux-dot-#uid#")?.setAttribute("fill", "var(--aux_colour#uid#)")
         else document.getElementById("aux-dot-#uid#")?.setAttribute("fill", "transparent")
+        
+        ///  SPEED  \\\
+        let speed = config#uid#.aux.animation_speed - ((config#uid#.aux.animation_speed - 1.5) * ((config#uid#.aux.power) / (config#uid#.aux.max_power || config#uid#.aux.power)))
+        speed = (speed >= 1.5) ? speed : 1.5
+        document.getElementById("aux-anim-#uid#")?.setAttribute("dur",speed)
+        log#uid#('| animation_speed = ' + config#uid#.aux.animation_speed)
+        log#uid#('| new animation_speed = ' + speed)
       } // ElDomExist
       log#uid#('└──────────────────────────────────────────────────────')
       if (config#uid#.has_load && el != 'init' && config#uid#.activateGaugeRatio) calculateGaugeRatio#uid#('calculateAux')
@@ -3170,9 +3248,9 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
       if (ElDomExist) {
         if (el != '') log#uid#('| launched by ' + el)
         if (el == 'init' || el == 'battery state'){
+          ///  ICON  \\\
           if (!config#uid#.battery.icon) {
-            ///  Icon Battery  \\\
-            document.getElementById("icon_bat#uid#").innerHTML = getBatteryIcon#uid#(config#uid#.battery.state.state, config#uid#.battery.full_capacity, config#uid#.battery.empty_capacity)
+            document.getElementById("battery-icon-#uid#").innerHTML = getBatteryIcon#uid#(config#uid#.battery.state.state, config#uid#.battery.full_capacity, config#uid#.battery.empty_capacity)
             if (config#uid#.battery.autoColorBattery) {
               ///  set color icon & state  \\\
               let color_battery = 'var(--battery_colour#uid#)'
@@ -3181,73 +3259,109 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               else if (config#uid#.battery.state.state < 75) color_battery = 'var(--battery-state-50-#uid#)'
               else if (config#uid#.battery.state.state < 100) color_battery = 'var(--battery-state-75-#uid#)'
               else color_battery = 'var(--battery-state-100-#uid#)'
-              document.getElementById("icon_bat#uid#").style.color = color_battery
-              document.getElementById("battery_soc#uid#")?.setAttribute("fill", color_battery)
+              document.getElementById("battery-icon-#uid#").style.color = color_battery
+              document.getElementById("battery-soc-#uid#")?.setAttribute("fill", color_battery)
             }
           }
-          if (config#uid#.battery.state.show) document.getElementById("battery_soc#uid#").innerHTML = trunc#uid#(config#uid#.battery.state.state, 1) + '%'
+          if (config#uid#.battery.state.show) document.getElementById("battery-soc-#uid#").innerHTML = trunc#uid#(config#uid#.battery.state.state, 1) + '%'
         }
-        if (el == 'init' || el == 'battery power' || el == 'battery mppt power'){
-          let totalFromInverter = (config#uid#.battery.power.state < 0) ? config#uid#.battery.power.state + config#uid#.battery.mppt.power.state : config#uid#.battery.power.state
+        if (el == 'init' || el == 'battery power' || el == 'battery mppt power') {
+          let totalFromInverter = (config#uid#.battery.power.state < 0) ? Math.min(config#uid#.battery.power.state + config#uid#.battery.mppt.power.state, 0) : config#uid#.battery.power.state
           log#uid#('| totalFromInverter : ' + totalFromInverter)
           let color = 'var(--battery_colour#uid#)'
-          ///  Gauge  \\\
-          if (config#uid#.battery.energy) {
-            if (config#uid#.activateGauge) {
-              if (Math.abs(config#uid#.battery.power.state) > 0) {
-                let gaugePourcent = Math.abs(config#uid#.battery.power.state) * 100 / config#uid#.battery.energy
-                let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
-                document.getElementById("battery-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
-              } else document.getElementById("battery-rect-gauge-#uid#")?.setAttribute('width', 0)
+          
+          ///  GAUGE POWER  \\\
+          if (el != 'battery mppt power') {
+            if (config#uid#.battery.max_power) {
+              if (config#uid#.activateGauge) {
+                if (Math.abs(config#uid#.battery.power.state) > 0) {
+                  let gaugePourcent = Math.abs(config#uid#.battery.power.state) * 100 / config#uid#.battery.max_power
+                  let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
+                  document.getElementById("battery-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
+                } else document.getElementById("battery-rect-gauge-#uid#")?.setAttribute('width', 0)
+              }
             }
           }
-          ///  Dot  \\\
-          if(parseFloat(totalFromInverter) > 0) {
-            document.getElementById("power-dot-charge#uid#")?.setAttribute("fill", "transparent")
-            document.getElementById("power-dot-discharge#uid#")?.setAttribute("fill", "var(--battery-discharge#uid#)") //--battery_colour#uid#
+          ///  GAUGE MPPT  \\\
+          if (el != 'battery power') {
+            if (config#uid#.battery.mppt.max_power) {
+              if (config#uid#.activateGauge) {
+                if (Math.abs(config#uid#.battery.mppt.power.state) > 0) {
+                  let gaugePourcent = Math.abs(config#uid#.battery.mppt.power.state) * 100 / config#uid#.battery.mppt.max_power
+                  let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
+                  document.getElementById("battery-mppt-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
+                } else document.getElementById("battery-mppt-rect-gauge-#uid#")?.setAttribute('width', 0)
+              }
+            }
+          }
+          
+          ///  DOT  \\\
+          if (parseFloat(totalFromInverter) > 0) {
+            document.getElementById("battery-dot-charge-#uid#")?.setAttribute("fill", "transparent")
+            document.getElementById("battery-dot-discharge-#uid#")?.setAttribute("fill", "var(--battery-discharge#uid#)") //--battery_colour#uid#
             color = 'var(--battery-discharge#uid#)'
           }
-          else if(parseFloat(totalFromInverter) < 0) {
-            document.getElementById("power-dot-charge#uid#")?.setAttribute("fill", "var(--battery-charge#uid#)") //--battery_colour#uid#
-            document.getElementById("power-dot-discharge#uid#")?.setAttribute("fill", "transparent")
+          else if (parseFloat(totalFromInverter) < 0) {
+            document.getElementById("battery-dot-charge-#uid#")?.setAttribute("fill", "var(--battery-charge#uid#)") //--battery_colour#uid#
+            document.getElementById("battery-dot-discharge-#uid#")?.setAttribute("fill", "transparent")
             color = 'var(--battery-charge#uid#)'
           }
           else {
-            document.getElementById("power-dot-charge#uid#")?.setAttribute("fill", "transparent")
-            document.getElementById("power-dot-discharge#uid#")?.setAttribute("fill", "transparent")
+            document.getElementById("battery-dot-charge-#uid#")?.setAttribute("fill", "transparent")
+            document.getElementById("battery-dot-discharge-#uid#")?.setAttribute("fill", "transparent")
           }
-          ///  Colors  \\\
           
-          // test desactivate alerte for battery
-          /*
-          if (config#uid#.battery.energy && Math.abs(config#uid#.battery.power.state) >= config#uid#.battery.energy) {
+          ///  COLOR  \\\
+          document.getElementById("battery-line-#uid#")?.setAttribute("stroke", color)
+          document.getElementById("battery-rect-gauge-#uid#")?.setAttribute("fill", color)
+          document.getElementById("battery-duration-#uid#")?.setAttribute("fill", color)
+          document.getElementById("battery-duration-text-#uid#")?.setAttribute("fill", color)
+          
+          ///  ALERTE POWER \\\
+          if (config#uid#.battery.alert_power && config#uid#.battery.power.state >= config#uid#.battery.alert_power) {
             document.getElementById("battery-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+            if (config#uid#.font_alert) document.getElementById("battery-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
             if (config#uid#.blink) {
               document.getElementById("battery-rect-#uid#")?.classList.add("blink#uid#")
               document.getElementById("battery-rect-gauge-#uid#")?.classList.add("blink#uid#")
+              //if (config#uid#.font_alert) document.getElementById("battery-power-#uid#")?.classList.add("blink#uid#")
             }
           } else {
             document.getElementById("battery-rect-#uid#")?.setAttribute("stroke", color)
+            document.getElementById("battery-power-#uid#")?.setAttribute("fill", color)
             if (config#uid#.blink) {
               document.getElementById("battery-rect-#uid#")?.classList.remove("blink#uid#")
               document.getElementById("battery-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+              //if (config#uid#.font_alert) document.getElementById("battery-power-#uid#")?.classList.remove("blink#uid#")
             }
           }
-          */
-          document.getElementById("bat-line#uid#")?.setAttribute("stroke", color)
-          document.getElementById("battery-rect-gauge-#uid#")?.setAttribute("fill", color)
-          document.getElementById("battery-rect-#uid#")?.setAttribute("stroke", color)
-          document.getElementById("battery_power#uid#")?.setAttribute("fill", color)
-          document.getElementById("duration#uid#")?.setAttribute("fill", color)
-          document.getElementById("duration_text_etat#uid#")?.setAttribute("fill", color)
-          ///  Speed  \\\
+          
+          ///  ALERTE MPPT POWER \\\
+          if (config#uid#.battery.mppt.alert_power && config#uid#.battery.mppt.power.state >= config#uid#.battery.mppt.alert_power) {
+            document.getElementById("battery-mppt-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+            if (config#uid#.font_alert) document.getElementById("battery-mppt-power-#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
+            if (config#uid#.blink) {
+              document.getElementById("battery-mppt-rect-#uid#")?.classList.add("blink#uid#")
+              document.getElementById("battery-mppt-rect-gauge-#uid#")?.classList.add("blink#uid#")
+              //if (config#uid#.font_alert) document.getElementById("battery-mppt-power-#uid#")?.classList.add("blink#uid#")
+            }
+          } else {
+            document.getElementById("battery-mppt-rect-#uid#")?.setAttribute("stroke", "var(--battery_mppt_colour#uid#)")
+            document.getElementById("battery-mppt-power-#uid#")?.setAttribute("fill", "var(--battery_mppt_colour#uid#)")
+            if (config#uid#.blink) {
+              document.getElementById("battery-mppt-rect-#uid#")?.classList.remove("blink#uid#")
+              document.getElementById("battery-mppt-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+              //if (config#uid#.font_alert) document.getElementById("battery-mppt-power-#uid#")?.classList.remove("blink#uid#")
+            }
+          }
+          ///  SPEED  \\\
           log#uid#('| animation_speed = ' + config#uid#.battery.animation_speed)
-          log#uid#('| energie = ' + config#uid#.battery.energy)
-          let speed = config#uid#.battery.animation_speed - ((config#uid#.battery.animation_speed - 1.5) * ((totalFromInverter < 0 ? totalFromInverter * -1 : totalFromInverter) / (config#uid#.battery.energy || (totalFromInverter < 0 ? totalFromInverter * -1 : totalFromInverter))))
+          log#uid#('| max_power = ' + config#uid#.battery.max_power)
+          let speed = config#uid#.battery.animation_speed - ((config#uid#.battery.animation_speed - 1.5) * Math.abs(totalFromInverter) / (config#uid#.battery.max_power || Math.abs(totalFromInverter)))
           speed = (speed >= 1.5) ? speed : 1.5
-          document.getElementById("anim_battery-charge#uid#")?.setAttribute("dur",speed)
-          document.getElementById("anim_battery-discharge#uid#")?.setAttribute("dur",speed)
           log#uid#('| animation_speed = ' + speed)
+          document.getElementById("battery-anim-charge-#uid#")?.setAttribute("dur",speed)
+          document.getElementById("battery-anim-discharge-#uid#")?.setAttribute("dur",speed)
           
           if (config#uid#.has_load && el != 'init' && config#uid#.activateGaugeRatio) calculateGaugeRatio#uid#('calculateBattery')
         }
@@ -3296,13 +3410,13 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
           }
           duration +=  minutes + ' min'
           log#uid#('| duration= ' + duration)
-          if (config#uid#.battery.power.state == 0 || config#uid#.battery.power.state == '0' || duration == '0 min') {
-            document.getElementById("duration#uid#").innerHTML = ''
-            document.getElementById("duration_text_etat#uid#").innerHTML = ''
+          if (config#uid#.battery.power.state == 0 || duration == '0 min') { // || config#uid#.battery.power.state == '0'
+            document.getElementById("battery-duration-#uid#").innerHTML = ''
+            document.getElementById("battery-duration-text-#uid#").innerHTML = ''
           } else {
-            document.getElementById("duration#uid#").innerHTML = duration
-            if (config#uid#.battery.power.state <= 0) document.getElementById("duration_text_etat#uid#").innerHTML = 'CHARGE ' + config#uid#.battery.full_capacity + '% À ' + formattedResultTime
-            if (config#uid#.battery.power.state >= 0) document.getElementById("duration_text_etat#uid#").innerHTML = 'DÉCHARGE : ' + config#uid#.battery.soc.shutdown + '% À ' + formattedResultTime
+            document.getElementById("battery-duration-#uid#").innerHTML = duration
+            if (config#uid#.battery.power.state <= 0) document.getElementById("battery-duration-text-#uid#").innerHTML = 'CHARGE ' + config#uid#.battery.full_capacity + '% À ' + formattedResultTime
+            if (config#uid#.battery.power.state >= 0) document.getElementById("battery-duration-text-#uid#").innerHTML = 'DÉCHARGE : ' + config#uid#.battery.soc.shutdown + '% À ' + formattedResultTime
           }
           if(timer_in#uid# === false) {
             log#uid#('| initialisation de la tempo')
@@ -3323,80 +3437,89 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
       var ElDomExist = !!document.getElementById("widget#uid#");
       log#uid#('| ElDomExist ? ' + ElDomExist)
       if (ElDomExist) {
-        ///  Dot  \\\
-        let PowerTrunc = trunc#uid#(config#uid#.grid.power, 1)
-        let PowerAbs = Math.abs(PowerTrunc)
-        if(PowerTrunc > 0) {
-          document.getElementById("grid-dot-buy#uid#")?.setAttribute("fill", "var(--grid-buy-colour#uid#)");//--grid_colour#uid#
-          document.getElementById("grid-dot1-buy#uid#")?.setAttribute("fill", "var(--grid-buy-colour#uid#)");//--grid_colour#uid#
-          document.getElementById("grid-dot-sell#uid#")?.setAttribute("fill", "transparent");
-          document.getElementById("grid-dot1-sell#uid#")?.setAttribute("fill", "transparent");
-        } else if (PowerTrunc < 0) {
-          document.getElementById("grid-dot-buy#uid#")?.setAttribute("fill", "transparent");
-          document.getElementById("grid-dot1-buy#uid#")?.setAttribute("fill", "transparent");
-          document.getElementById("grid-dot-sell#uid#")?.setAttribute("fill", "var(--grid-sell-colour#uid#)");//--grid_colour#uid#
-          document.getElementById("grid-dot1-sell#uid#")?.setAttribute("fill", "var(--grid-sell-colour#uid#)");//--grid_colour#uid#
-        } else {
-          document.getElementById("grid-dot-buy#uid#")?.setAttribute("fill", "transparent");
-          document.getElementById("grid-dot1-buy#uid#")?.setAttribute("fill", "transparent");
-          document.getElementById("grid-dot-sell#uid#")?.setAttribute("fill", "transparent");
-          document.getElementById("grid-dot1-sell#uid#")?.setAttribute("fill", "transparent");
+        
+        ///  COLORS  \\\
+        let color = 'var(--grid_colour#uid#)'
+        if (config#uid#.grid.power > 0) color = 'var(--grid-buy-colour#uid#)'
+        else if (config#uid#.grid.power < 0) color = 'var(--grid-sell-colour#uid#)'
+        document.getElementById("grid-line-1-#uid#")?.setAttribute("stroke", color)
+        document.getElementById("grid-line-2-#uid#")?.setAttribute("stroke", color)
+        
+        ///  GAUGE  \\\
+        if (config#uid#.grid.max_power && config#uid#.activateGauge) {
+          let gaugePourcent = Math.abs(config#uid#.grid.power) * 100 / Math.abs(config#uid#.grid.max_power)
+          let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
+          if (is_object(gauge = document.getElementById("grid-rect-gauge-#uid#"))) {
+            gauge.setAttribute('width', width_rect_gauge)
+            gauge.setAttribute("fill", color)
+            if (config#uid#.grid.power < 0) {
+              gauge.style.transform = "translateX(" + (70 - width_rect_gauge) + "px)"
+            } else {
+              gauge.style.transform = "translateX(0px)"
+            }
+          }
         }
-        ///  Speed  \\\
+        
+        ///  ALERT  \\\
+        if (config#uid#.grid.alert_power && Math.abs(config#uid#.grid.power) >= Math.abs(config#uid#.grid.alert_power)) {
+          if (config#uid#.blink) {
+            document.getElementById("grid-rect-#uid#")?.classList.add("blink#uid#")
+            document.getElementById("grid-rect-gauge-#uid#")?.classList.add("blink#uid#")
+            //if (config#uid#.font_alert) document.getElementById("grid-power-#uid#")?.classList.add("blink#uid#")
+          }
+          if (config#uid#.font_alert) document.getElementById("grid_power#uid#")?.setAttribute("fill", "var(--color_alerte#uid#)")
+          document.getElementById("grid-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
+        } else {
+          if (config#uid#.blink) {
+            document.getElementById("grid-rect-#uid#")?.classList.remove("blink#uid#")
+            document.getElementById("grid-rect-gauge-#uid#")?.classList.remove("blink#uid#")
+            //if (config#uid#.font_alert) document.getElementById("grid-power-#uid#")?.classList.remove("blink#uid#")
+          }
+          document.getElementById("grid-power-#uid#")?.setAttribute("fill", color)
+          document.getElementById("grid-rect-#uid#")?.setAttribute("stroke", color)
+        }
+        
+        ///  DOT  \\\
+        let PowerTrunc = trunc#uid#(config#uid#.grid.power, config#uid#.powerTrunc)
+        if(PowerTrunc > 0) {
+          document.getElementById("grid-dot-buy-1-#uid#")?.setAttribute("fill", "var(--grid-buy-colour#uid#)");
+          document.getElementById("grid-dot-buy-2-#uid#")?.setAttribute("fill", "var(--grid-buy-colour#uid#)");
+          document.getElementById("grid-dot-sell-1-#uid#")?.setAttribute("fill", "transparent");
+          document.getElementById("grid-dot-sell-2-#uid#")?.setAttribute("fill", "transparent");
+        } else if (PowerTrunc < 0) {
+          document.getElementById("grid-dot-buy-1-#uid#")?.setAttribute("fill", "transparent");
+          document.getElementById("grid-dot-buy-2-#uid#")?.setAttribute("fill", "transparent");
+          document.getElementById("grid-dot-sell-1-#uid#")?.setAttribute("fill", "var(--grid-sell-colour#uid#)");
+          document.getElementById("grid-dot-sell-2-#uid#")?.setAttribute("fill", "var(--grid-sell-colour#uid#)");
+        } else {
+          document.getElementById("grid-dot-buy-1-#uid#")?.setAttribute("fill", "transparent");
+          document.getElementById("grid-dot-buy-2-#uid#")?.setAttribute("fill", "transparent");
+          document.getElementById("grid-dot-sell-1-#uid#")?.setAttribute("fill", "transparent");
+          document.getElementById("grid-dot-sell-2-#uid#")?.setAttribute("fill", "transparent");
+        }
+        
+        ///  SPEED  \\\
         log#uid#('| animation_speed = ' + config#uid#.grid.animation_speed)
         log#uid#('| max_power = ' + config#uid#.grid.max_power)
         log#uid#('| power = ' + config#uid#.grid.power)        
-        let speed = config#uid#.grid.animation_speed - ((config#uid#.grid.animation_speed - 1.5) * ((config#uid#.grid.power < 0 ? config#uid#.grid.power * -1 : config#uid#.grid.power) / (config#uid#.grid.max_power || (config#uid#.grid.power < 0 ? config#uid#.grid.power * -1 : config#uid#.grid.power))))
+        let speed = config#uid#.grid.animation_speed - ((config#uid#.grid.animation_speed - 1.5) * Math.abs(config#uid#.grid.power) / (config#uid#.grid.max_power || Math.abs(config#uid#.grid.power)))
         speed = (speed >= 1.5) ? speed : 1.5
         document.getElementById("anim_grid_buy#uid#")?.setAttribute("dur",speed)
         document.getElementById("anim_grid_sell#uid#")?.setAttribute("dur",speed)
         document.getElementById("anim_grid_buy1#uid#")?.setAttribute("dur",speed)
         document.getElementById("anim_grid_sell1#uid#")?.setAttribute("dur",speed)
         log#uid#('| animation_speed = ' + speed)
-        ///  Colors  \\\
-        let color = 'var(--grid_colour#uid#)'
-        if (config#uid#.grid.power > 0) {
-          color = 'var(--grid-buy-colour#uid#)'
-        }
-        else if (config#uid#.grid.power < 0) {
-          color = 'var(--grid-sell-colour#uid#)'
-        }
-        document.getElementById("grid_power#uid#")?.setAttribute("fill", color)
-        document.getElementById("grid-line#uid#")?.setAttribute("stroke", color)
-        document.getElementById("grid-line1#uid#")?.setAttribute("stroke", color)
-        /// Icon  \\\
+        
+        /// ICON  \\\
         if (config#uid#.grid.status === 1) {
-          document.getElementById("transmission_on#uid#").style.color = color
-          document.getElementById("transmission_off#uid#").style.color = color
+          document.getElementById("grid-transmission-on-#uid#").style.color = color
+          document.getElementById("grid-transmission-off-#uid#").style.color = color
           if (config#uid#.grid.power == 0) {
-            document.getElementById("transmission_off#uid#")?.classList.remove("hidden-#uid#")
-            document.getElementById("transmission_on#uid#")?.classList.add("hidden-#uid#")
+            document.getElementById("grid-transmission-off-#uid#")?.classList.remove("hidden-#uid#")
+            document.getElementById("grid-transmission-on-#uid#")?.classList.add("hidden-#uid#")
           } else {
-            document.getElementById("transmission_on#uid#")?.classList.remove("hidden-#uid#")
-            document.getElementById("transmission_off#uid#")?.classList.add("hidden-#uid#")
-          }
-        }
-        ///  Max  \\\
-        if (config#uid#.grid.max_power) {
-          if (Math.abs(config#uid#.grid.power) >= config#uid#.grid.max_power) {
-            if (config#uid#.blink) {
-              document.getElementById("grid-rect-#uid#")?.classList.add("blink#uid#")
-              document.getElementById("grid-rect-gauge-#uid#")?.classList.add("blink#uid#")
-            }
-            document.getElementById("grid-rect-#uid#")?.setAttribute("stroke", "var(--color_alerte#uid#)")
-          } else {
-            if (config#uid#.blink) {
-              document.getElementById("grid-rect-#uid#")?.classList.remove("blink#uid#")
-              document.getElementById("grid-rect-gauge-#uid#")?.classList.remove("blink#uid#")
-            }
-            document.getElementById("grid-rect-#uid#")?.setAttribute("stroke", color)
-          }
-          document.getElementById("grid-rect-gauge-#uid#")?.setAttribute("fill", color)
-          ///  Gauge  \\\
-          if (config#uid#.activateGauge) {
-            let gaugePourcent = Math.abs(config#uid#.grid.power) * 100 / config#uid#.grid.max_power
-            let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
-            document.getElementById("grid-rect-gauge-#uid#")?.setAttribute('width', width_rect_gauge)
+            document.getElementById("grid-transmission-on-#uid#")?.classList.remove("hidden-#uid#")
+            document.getElementById("grid-transmission-off-#uid#")?.classList.add("hidden-#uid#")
           }
         }
       } // ElDomExist
@@ -3527,53 +3650,53 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
         let hours = dToday.getHours()
         let dnext = new Date(dToday.getTime() + 86400000);
         let dnextText = dnext.toLocaleString(navigator.language,{dateStyle: "full"})
-        if (is_object(document.getElementById("tempo_today_text#uid#"))) {
+        if (is_object(document.getElementById("grid-tempo-today-text-#uid#"))) {
           if (Object.keys(JsonTempoArray#uid#).length > 0 && Array.isArray(JsonTempoArray#uid#)) { // si c'est un json valide qui est envoyé dans addUpdateFunction
             log#uid#(JsonTempoArray#uid#)
             log#uid#('|┌─────────────────── jsonTempo detecté ───────────────────')
             log#uid#('|| hours : ' + hours)
             if(JsonTempoArray#uid#[dTodayText]) {
               log#uid#('|| Date now ' + dTodayText + ' => ' + JsonTempoArray#uid#[dTodayText])
-              document.getElementById("tempo_today_circle#uid#")?.setAttribute("fill", 'var(--' + getLabel(JsonTempoArray#uid#[dTodayText]) + ')')
-              document.getElementById("tempo_today_text#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
-              document.getElementById("tempo_today_text#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
+              document.getElementById("grid-tempo-today-circle-#uid#")?.setAttribute("fill", 'var(--' + getLabel(JsonTempoArray#uid#[dTodayText]) + ')')
+              document.getElementById("grid-tempo-today-text-#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
+              document.getElementById("grid-tempo-today-text-#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
             }
             else {
-              document.getElementById("tempo_today_circle#uid#")?.setAttribute("fill", "transparent")
-              document.getElementById("tempo_today_text#uid#")?.setAttribute("fill", "transparent")
+              document.getElementById("grid-tempo-today-circle-#uid#")?.setAttribute("fill", "transparent")
+              document.getElementById("grid-tempo-today-text-#uid#")?.setAttribute("fill", "transparent")
             }
             if(JsonTempoArray#uid#[dnextText]) {
               log#uid#('|| Date tomorrow ' + dnextText + ' => ' + JsonTempoArray#uid#[dnextText])
-              document.getElementById("tempo_tomorrow_circle#uid#")?.setAttribute("fill", 'var(--' + getLabel(JsonTempoArray#uid#[dnextText]) + ')')
-              document.getElementById("tempo_tomorrow_text#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
+              document.getElementById("grid-tempo-tomorrow-circle-#uid#")?.setAttribute("fill", 'var(--' + getLabel(JsonTempoArray#uid#[dnextText]) + ')')
+              document.getElementById("grid-tempo-tomorrow-text-#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
             }
             else {
-              document.getElementById("tempo_tomorrow_circle#uid#")?.setAttribute("fill", "transparent")
-              document.getElementById("tempo_tomorrow_text#uid#")?.setAttribute("fill", "transparent")
+              document.getElementById("grid-tempo-tomorrow-circle-#uid#")?.setAttribute("fill", "transparent")
+              document.getElementById("grid-tempo-tomorrow-text-#uid#")?.setAttribute("fill", "transparent")
             }
             reinitTempo = true
             log#uid#('|└────────────────────────────────────')
           } else {
-            document.getElementById("tempo_tomorrow_circle#uid#")?.setAttribute("fill", "transparent")
-            document.getElementById("tempo_tomorrow_text#uid#")?.setAttribute("fill", "transparent")
+            document.getElementById("grid-tempo-tomorrow-circle-#uid#")?.setAttribute("fill", "transparent")
+            document.getElementById("grid-tempo-tomorrow-text-#uid#")?.setAttribute("fill", "transparent")
             if (JsonTempoArray#uid#.includes('red') || JsonTempoArray#uid#.includes('rouge')){
-              document.getElementById("tempo_today_circle#uid#")?.setAttribute("fill", 'var(--' + getLabel('RED') + ')')
-              document.getElementById("tempo_today_text#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
-              document.getElementById("tempo_today_text#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
+              document.getElementById("grid-tempo-today-circle-#uid#")?.setAttribute("fill", 'var(--' + getLabel('RED') + ')')
+              document.getElementById("grid-tempo-today-text-#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
+              document.getElementById("grid-tempo-today-text-#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
               reinitTempo = true
             } else if (JsonTempoArray#uid#.includes('blue') || JsonTempoArray#uid#.includes('bleu')) {
-              document.getElementById("tempo_today_circle#uid#")?.setAttribute("fill", 'var(--' + getLabel('BLUE') + ')')
-              document.getElementById("tempo_today_text#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
-              document.getElementById("tempo_today_text#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
+              document.getElementById("grid-tempo-today-circle-#uid#")?.setAttribute("fill", 'var(--' + getLabel('BLUE') + ')')
+              document.getElementById("grid-tempo-today-text-#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
+              document.getElementById("grid-tempo-today-text-#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
               reinitTempo = true
             } else if (JsonTempoArray#uid#.includes('white') || JsonTempoArray#uid#.includes('blanc')) {
-              document.getElementById("tempo_today_circle#uid#")?.setAttribute("fill", 'var(--' + getLabel('WHITE') + ')')
-              document.getElementById("tempo_today_text#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
-              document.getElementById("tempo_today_text#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
+              document.getElementById("grid-tempo-today-circle-#uid#")?.setAttribute("fill", 'var(--' + getLabel('WHITE') + ')')
+              document.getElementById("grid-tempo-today-text-#uid#")?.setAttribute("fill", "var(--grid_colour#uid#)")
+              document.getElementById("grid-tempo-today-text-#uid#").innerHTML = (hours >= 6 && hours < 22) ? 'HP' : 'HC'
               reinitTempo = true
             } else {
-              document.getElementById("tempo_today_circle#uid#")?.setAttribute("fill", "transparent")
-              document.getElementById("tempo_today_text#uid#")?.setAttribute("fill", "transparent")
+              document.getElementById("grid-tempo-today-circle-#uid#")?.setAttribute("fill", "transparent")
+              document.getElementById("grid-tempo-today-text-#uid#")?.setAttribute("fill", "transparent")
             }
           }
         
@@ -3622,8 +3745,8 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
         else {
           log#uid#('| -> no jsonTempo detecté')
           let value = _options.display_value.toLowerCase()
-          document.getElementById("tempo_tomorrow_circle#uid#")?.setAttribute("fill", "transparent")
-          document.getElementById("tempo_tomorrow_text#uid#")?.setAttribute("fill", "transparent")
+          document.getElementById("grid-tempo-tomorrow-circle-#uid#")?.setAttribute("fill", "transparent")
+          document.getElementById("grid-tempo-tomorrow-text-#uid#")?.setAttribute("fill", "transparent")
           if (value.includes('red') || value.includes('rouge')) JsonTempoArray#uid# = 'red'
           else if (value.includes('blue') || value.includes('bleu')) JsonTempoArray#uid# = 'blue'
           else if (value.includes('white') || value.includes('blanc')) JsonTempoArray#uid# = 'white'
