@@ -204,7 +204,7 @@
       return (n & 1) ? false : true;
     }
     
-    function formatMillier(nombre, active=false){
+    function formatMillier(nombre, active=false) {
       if (!active) return nombre;
       //return Intl.NumberFormat().format(nombre);
       nombre += '';
@@ -1279,7 +1279,7 @@
               config#uid#.load.daily.state = isNaN(parseFloat(dailyValue)) ? 0 : parseFloat(dailyValue)
               config#uid#.load.daily.show = true
               config#uid#.has_load = true
-                            jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
+              jeedom.cmd.addUpdateFunction(cmd.id, function(_options) {
                 if (is_object(cmd = document.getElementById("load-daily-#uid#"))) {
                   if (config#uid#.autoConversionUnit) {
                     let daily = autoValueArray#uid#((_options.value != undefined) ? parseFloat(_options.value) : 0, config#uid#.load.daily.unit)
@@ -2292,15 +2292,15 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ////////////////////////////////////
               html += '<!-- Load ' + num_load + '-->'
               html += '<rect id="load' + num_load + '-rect-#uid#" class="'
-              html += ((config#uid#.blink && config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? 'blink#uid#' : '')
+              html += ((config#uid#.blink && config#uid#.loads[num_load].max_alert && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_alert) ? 'blink#uid#' : '')
               html += '" x="' + x_rect + '" y="' + y_rect + '" width="70" height="30" rx="4.5" ry="4.5" fill="none" stroke="'
-              html += ((config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? 'var(--color_alerte#uid#)' : 'var(--load_colour#uid#)')
+              html += ((config#uid#.loads[num_load].max_alert && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_alert) ? 'var(--color_alerte#uid#)' : 'var(--load_colour#uid#)')
               html += '" />'
               if (config#uid#.loads[num_load].max_power && config#uid#.activateGauge) {
                 let gaugePourcent = config#uid#.loads[num_load].power * 100 / config#uid#.loads[num_load].max_power
                 let width_rect_gauge = Math.max(Math.min((gaugePourcent / 100 * 70), 70), 0)
                 html += '<rect id="load' + num_load + '-rect-gauge-#uid#" class="op-#uid# '
-                html += ((config#uid#.blink && config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? 'blink#uid#' : '')
+                html += ((config#uid#.blink && config#uid#.loads[num_load].max_alert && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_alert) ? 'blink#uid#' : '')
                 html += '" x="' + x_rect + '" y="' + y_rect + '" width="' + width_rect_gauge + '" height="30" rx="4.5" ry="4.5" fill="var(--load_colour#uid#)" stroke="none" />'
               }
               
@@ -2308,9 +2308,9 @@ if (config#uid#.persos[perso].text != '' && config#uid#.persos[perso].position =
               ///  POWER  ///
               ///////////////
               html += '<text id="load' + num_load + '-power-#uid#" x="' + x_power + '" y="' + y_power + '" class="ft12-#uid# ftw-#uid# center-align#uid# sh-#uid#' + (isset(config#uid#.loads[num_load].power_isHistorized) && config#uid#.loads[num_load].power_isHistorized == 1 ? ' history cursor' : '')
-              html += ((config#uid#.font_alert && config#uid#.blink && config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? ' blink#uid#' : '')
+              //html += ((config#uid#.font_alert && config#uid#.blink && config#uid#.loads[num_load].max_alert && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_alert) ? ' blink#uid#' : '')
               html += '" fill="'
-              html += ((config#uid#.font_alert && config#uid#.loads[num_load].max_power && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_power) ? 'var(--color_alerte#uid#)' : 'var(--load_colour#uid#)')
+              html += ((config#uid#.font_alert && config#uid#.loads[num_load].max_alert && config#uid#.loads[num_load].power >= config#uid#.loads[num_load].max_alert) ? 'var(--color_alerte#uid#)' : 'var(--load_colour#uid#)')
               html += '"'
               html += ((isset(config#uid#.loads[num_load].power_id) && config#uid#.loads[num_load].power_id) ? ' data-cmd_id=' + config#uid#.loads[num_load].power_id : '')
               html += '>'
