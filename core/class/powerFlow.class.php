@@ -304,7 +304,7 @@ class powerFlow extends eqLogic
 						$result_pv[$i] = array('power::cmd' => false, 'max_power' => false, 'max_alert' => false);
 						//$has_solar = true;
 						$i++;
-                    }
+					}
 				}
 				$i2++;
 			}
