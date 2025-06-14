@@ -300,9 +300,10 @@ class powerFlow extends eqLogic
 							$i++;
 						} else log::add(__CLASS__, 'debug', '| KO  Solar N° ' . $i2 . ' - power::cmd not command valid !');
 					} else {
-                      log::add(__CLASS__, 'debug', '| [INFO] Solar N° ' . $i2 . ' masqué.');
-                      $result_pv[$i] = array('power::cmd' => false, 'max_power' => false, 'max_alert' => false);
-                      $i++;
+						log::add(__CLASS__, 'debug', '| [INFO] Solar N° ' . $i2 . ' masqué.');
+						$result_pv[$i] = array('power::cmd' => false, 'max_power' => false, 'max_alert' => false);
+						//$has_solar = true;
+						$i++;
                     }
 				}
 				$i2++;
@@ -587,11 +588,11 @@ class powerFlow extends eqLogic
 							$i++;
 						} else log::add(__CLASS__, 'debug', '| KO  Load N° ' . $i2 . ' - power::cmd not command valid !');
 					} else {
-                      log::add(__CLASS__, 'debug', '| [INFO] Load N° ' . $i2 . ' masqué.');
-                      $result_load[$i] = array('power::cmd' => false, 'max_power' => false, 'max_alert' => false, 'name' => false, 'icon' => false);
-                      $has_load = true;
-                      $i++;
-                    }
+						log::add(__CLASS__, 'debug', '| [INFO] Load N° ' . $i2 . ' masqué.');
+						$result_load[$i] = array('power::cmd' => false, 'max_power' => false, 'max_alert' => false, 'name' => false, 'icon' => false);
+						//$has_load = true;
+						$i++;
+					}
 				}
 				$i2++;
 			}
