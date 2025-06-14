@@ -119,7 +119,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 							<div class="form-group">
 								<label class="col-sm-4 control-label">{{Options}}</label>
 								<div class="col-sm-6">
-									<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked>{{Activer}}</label>
+									<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isEnable" checked>{{Activé}}</label>
 									<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="isVisible" checked>{{Visible}}</label>
 								</div>
 							</div>
@@ -247,7 +247,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										</div>
 										<div class="col-lg-3">
 											<div class="input-group">
-												<span class="input-group-addon roundedLeft" style="min-width: 125px;">{{Couleur texte interieur}}</span>
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">{{Couleur texte intérieur}}</span>
 												<input type="color" class="eqLogicAttr form-control" value="#000000" data-l1key="configuration" data-l2key="inverter::color::in" />
 												<span class="input-group-btn">
 													<a class="btn btn-default restoreDefaut roundedRight" data-type="inverter::color::in" data-defaut="#000000" title="{{Couleur par défaut}}"><i class="fas fa-eraser"></i></a>
@@ -368,7 +368,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										<div class="col-lg-4">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{AC}} <sup><i class="fas fa-question-circle" title="{{Selectionner une commande info/numerique qui contient l'information de température AC.}}"></i></sup>
+													{{AC}} <sup><i class="fas fa-question-circle" title="{{Sélectionner une commande info/numérique qui contient l'information de température AC.}}"></i></sup>
 												</span>
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="inverter::temp::ac::cmd" />
 												<span class="input-group-btn">
@@ -385,7 +385,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										<div class="col-lg-4">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{DC}} <sup><i class="fas fa-question-circle" title="{{Selectionner une commande info/numerique qui contient l'information de température DC.}}"></i></sup>
+													{{DC}} <sup><i class="fas fa-question-circle" title="{{Sélectionner une commande info/numérique qui contient l'information de température DC.}}"></i></sup>
 												</span>
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="inverter::temp::dc::cmd" />
 												<span class="input-group-btn">
@@ -583,7 +583,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 											<div class="col-lg-4">
 												<div class="input-group">
 													<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-														{{Commande}} <sup><i class="fas fa-question-circle" title="{{Selectionner une commande info/binaire qui contient l'information de présence secteur.}}"></i></sup>
+														{{Commande}} <sup><i class="fas fa-question-circle" title="{{Sélectionner une commande info/binaire qui contient l'information de présence secteur.}}"></i></sup>
 													</span>
 													<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="grid::status::cmd" />
 													<span class="input-group-btn">
@@ -673,8 +673,8 @@ $eqLogics = eqLogic::byType('powerFlow');
 							<form class="form-horizontal">
 								<fieldset>
 									<div class="alert alert-info col-xs-12" style="text-align: center;margin-bottom: 15px;">
-										{{Si vous disposez déja d'une commande contenant la puissance totale des panneaux, vous pouvez renseigner celle-ci ci-dessous.}}
-										<br>{{Le widget prendra en compte cette valeur a défaut de calculer la somme des puissances de chaques panneaux.}}
+										{{Si vous disposez déjà d'une commande contenant la puissance totale des panneaux, vous pouvez renseigner celle-ci ci-dessous.}}
+										<br>{{Le widget prendra en compte cette valeur à défaut de calculer la somme des puissances de chaque panneau.}}
 									</div>
 									<div class="form-group">
 										<div class="col-lg-1">
@@ -683,7 +683,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										<div class="col-lg-4">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{Puissance totale}} <sup><i class="fas fa-question-circle" title="{{Laisser vide si vous voulez que le widget calcul la somme des panneaux.}}"></i></sup>
+													{{Puissance totale}} <sup><i class="fas fa-question-circle" title="{{Laisser vide si vous voulez que le widget calcule la somme des panneaux.}}"></i></sup>
 												</span>
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="solar::power::cmd" />
 												<span class="input-group-btn">
@@ -758,7 +758,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 							<form class="form-horizontal">
 								<fieldset>
 									<div class="alert alert-info col-xs-12" style="text-align: center;margin-bottom: 15px;">
-										{{A partir de 7 panneaux solaire, l'affichage de ceux-ci sur le widget, passent en horizontale au dessus des récepteurs.}}
+										{{A partir de 7 panneaux solaires, l'affichage de ceux-ci sur le widget passe en horizontal au dessus des récepteurs.}}
 									</div>
 									<legend>
 										<a class="btn btn-sm btn-success addPv" data-type="solar" data-subType="numeric"><i class="fas fa-plus-circle"></i> {{Ajout panneau solaire}}</a>
@@ -1089,7 +1089,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										<div class="col-lg-4">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{État SOC}} <sup><i class="fas fa-question-circle" title="{{Selectionner une commande info/numerique qui contient l'information de charge (%).}}"></i></sup>
+													{{État SOC}} <sup><i class="fas fa-question-circle" title="{{Sélectionner une commande info/numérique qui contient l'information de charge (%).}}"></i></sup>
 												</span>
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="battery::soc::cmd" />
 												<span class="input-group-btn">
@@ -1100,7 +1100,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										<div class="col-lg-3">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{SOC Min.}} <sub>(%)</sub> <sup><i class="fas fa-question-circle" title="{{Pourcentage a laquelle la batterie passe à l'arrêt.}}"></i></sup>
+													{{SOC Min.}} <sub>(%)</sub> <sup><i class="fas fa-question-circle" title="{{Pourcentage auquel la batterie passe à l'arrêt.}}"></i></sup>
 												</span>
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="battery::soc::shutdown">
 												<span class="input-group-btn">
@@ -1129,7 +1129,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 									<!-- BATTERY STATE COLOR -->
 									<div class="alert alert-info col-xs-12" style="text-align: center;margin-bottom: 15px;">
 										{{Couleur personnalisée de l'icône batterie en fonction de la charge restante.}}<br>
-										<i class="fas fa-exclamation-triangle"></i> {{Attention, cette fonctionnalité sera désactivée si vous utilisez une icône perso. ou une icône intègrée.}}
+										<i class="fas fa-exclamation-triangle"></i> {{Attention : cette fonctionnalité sera désactivée si vous utilisez une icône perso ou une icône intégrée.}}
 									</div>
 									<div class="form-group">
 										<div class="col-lg-1">
@@ -1244,8 +1244,8 @@ $eqLogics = eqLogic::byType('powerFlow');
 							<form class="form-horizontal">
 								<fieldset>
 									<div class="alert alert-info col-xs-12" style="text-align: center;margin-bottom: 15px;">
-										{{Si vous disposez déja d'une commande contenant la puissance totale des récepteurs, vous pouvez renseigner celle-ci ci-dessous.}}
-										<br>{{Le widget prendra en compte cette valeur a défaut de calculer la somme des puissances de chaques récepteurs.}}
+										{{Si vous disposez déjà d'une commande contenant la puissance totale des récepteurs, vous pouvez renseigner celle-ci ci-dessous.}}
+										<br>{{Le widget prendra en compte cette valeur à défaut de calculer la somme des puissances de chaque récepteur.}}
 									</div>
 									<div class="form-group">
 										<div class="col-lg-1">
@@ -1254,7 +1254,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										<div class="col-lg-4">
 											<div class="input-group">
 												<span class="input-group-addon roundedLeft" style="min-width: 125px;">
-													{{Puissance totale}} <sup><i class="fas fa-question-circle" title="{{Laisser vide si vous voulez que le widget calcul la somme des récepteurs.}}"></i></sup>
+													{{Puissance totale}} <sup><i class="fas fa-question-circle" title="{{Laisser vide si vous voulez que le widget calcule la somme des récepteurs.}}"></i></sup>
 												</span>
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="load::power::cmd">
 												<span class="input-group-btn">
@@ -1311,7 +1311,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 								<fieldset>
 									<div class="form-group">
 										<div class="col-lg-3">
-											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="load::animate::disable">{{Désativer les animations}} </label>
+											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="load::animate::disable">{{Désactiver les animations}} </label>
 										</div>
 									</div>
 								</fieldset>
@@ -1320,7 +1320,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 								<fieldset>
 									<div class="form-group">
 										<div class="col-lg-3">
-											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="load::force4load">{{Forçer 4 recépteurs par colonne}} </label>
+											<label class="checkbox-inline"><input type="checkbox" class="eqLogicAttr" data-l1key="configuration" data-l2key="load::force4load">{{Forcer 4 recépteurs par colonne}} </label>
 										</div>
 									</div>
 								</fieldset>
@@ -1435,7 +1435,7 @@ $eqLogics = eqLogic::byType('powerFlow');
 										</div>
 										<div class="col-lg-4">
 											<div class="input-group">
-												<span class="input-group-addon roundedLeft" style="min-width: 125px;">{{Energy}} </span>
+												<span class="input-group-addon roundedLeft" style="min-width: 125px;">{{Energie}} </span>
 												<input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="aux::daily::cmd" />
 												<span class="input-group-btn">
 													<a class="btn btn-default listCmdInfo roundedRight" data-type="aux::daily::cmd" data-subtype="numeric"><i class="fas fa-list-alt"></i></a>

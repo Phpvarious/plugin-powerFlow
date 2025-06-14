@@ -453,7 +453,7 @@ function addPv(_action) {
         div += '</div>'
         // Name
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le panneau.}}"></i></sup></span>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom à afficher pour identifier le panneau.}}"></i></sup></span>'
           div += '<div><input class="pvAttr form-control roundedRight" data-l1key="name"></div>'
         div += '</div>'
       div += '</div>'
@@ -519,7 +519,7 @@ function addLoad(_action) {
         div += '</div>'
         // Name
         div += '<div class="input-group">'
-          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom a afficher pour identifier le récepteur.}}"></i></sup></span>'
+          div += '<span class="input-group-addon roundedLeft" style="min-width: 110px;">{{Nom}} <sup><i class="fas fa-question-circle" title="{{Nom à afficher pour identifier le récepteur.}}"></i></sup></span>'
           div += '<input class="loadAttr form-control roundedRight" data-l1key="name">'
         div += '</div>'
 
@@ -598,7 +598,7 @@ function addPerso(_persoAttr = '') {
         div += '</div>'
         div += '<div class="input-group">'
           div += '<span class="input-group-addon roundedLeft" style="min-width: 120px;">{{Texte}} <sup><i class="fas fa-question-circle" title="'
-            div += '{{Texte à afficher}} ({{optionel}})'
+            div += '{{Texte à afficher}} ({{optionnel}})'
           div += '"></i></sup></span>'
           div += '<input class="persoAttr form-control" data-l1key="perso::text" placeholder="">'
           div += '<span class="input-group-addon" style="min-width: 120px;">{{Taille}} <sup><i class="fas fa-question-circle" title="'
